@@ -1,0 +1,20 @@
+{
+  "client\\eslint.config.js": 1776939685.7706625,
+  "client\\vite.config.js": 1776939686.2842495,
+  "client\\src\\App.jsx": 1776940359.3692496,
+  "client\\src\\firebase.js": 1776940244.8928993,
+  "client\\src\\main.jsx": 1776940409.8749516,
+  "client\\src\\components\\Navbar.jsx": 1776940460.413599,
+  "client\\src\\context\\AuthContext.jsx": 1776940278.9383366,
+  "client\\src\\pages\\Chat.jsx": 1776940959.01791,
+  "client\\src\\pages\\InterestSelector.jsx": 1776940780.696453,
+  "client\\src\\pages\\Login.jsx": 1776940649.491101,
+  "server\\index.js": 1776940142.950287,
+  "client\\index.html": 1776939920.9089398,
+  "client\\README.md": 1776939686.4096842,
+  "client\\public\\favicon.svg": 1776939686.5283048,
+  "client\\public\\icons.svg": 1776939686.587489,
+  "client\\src\\assets\\hero.png": 1776939686.4515667,
+  "client\\src\\assets\\react.svg": 1776939686.651621,
+  "client\\src\\assets\\vite.svg": 1776939686.7124462
+}

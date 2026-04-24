@@ -4,6 +4,7 @@ import { io } from 'socket.io-client';
 const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun2.l.google.com:19302' },
 ];
 
 export const useWebRTC = (socket) => {
@@ -50,7 +51,9 @@ export const useWebRTC = (socket) => {
 
     pc.ontrack = (event) => {
       console.log('Remote tracks received:', event.streams[0]);
-      setRemoteStream(event.streams[0]);
+      if (event.streams && event.streams[0]) {
+        setRemoteStream(event.streams[0]);
+      }
     };
 
     pc.onconnectionstatechange = () => {

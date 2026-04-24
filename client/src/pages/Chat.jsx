@@ -103,15 +103,18 @@ const Chat = () => {
   useEffect(() => {
     let interval;
     if (chatState === 'connected' && remoteStream && nsfwModel && remoteVideoRef.current) {
+      console.log('NSFW classification loop started');
       interval = setInterval(async () => {
         if (remoteVideoRef.current && remoteVideoRef.current.readyState === 4) {
           try {
             const predictions = await nsfwModel.classify(remoteVideoRef.current);
+            console.log('NSFW Predictions:', predictions);
             const isNsfw = predictions.some(p => 
-              ['Porn', 'Hentai', 'Sexy'].includes(p.className) && p.probability > 0.6
+              ['Porn', 'Hentai', 'Sexy'].includes(p.className) && p.probability > 0.4
             );
             if (isNsfw) {
               const highestNsfw = predictions.find(p => ['Porn', 'Hentai', 'Sexy'].includes(p.className));
+              console.log('NSFW MATCH FOUND:', highestNsfw);
               setIsRemoteBlurred(true);
               setShowNsfwPopup(true);
               setNsfwWarnings(prev => {
@@ -132,13 +135,25 @@ const Chat = () => {
           } catch (e) {
             console.log('NSFW Classification error:', e);
           }
+        } else {
+          console.log('Waiting for remote video to be ready for classification...');
         }
       }, 3000);
+    } else {
+      console.log('NSFW Loop conditions not met:', { 
+        chatState, 
+        hasRemoteStream: !!remoteStream, 
+        hasModel: !!nsfwModel, 
+        hasRef: !!remoteVideoRef.current 
+      });
     }
     
     // Cleanup on disconnect or unmount to save CPU
     return () => {
-      if (interval) clearInterval(interval);
+      if (interval) {
+        console.log('NSFW classification loop stopped');
+        clearInterval(interval);
+      }
     };
   }, [chatState, remoteStream, nsfwModel]);
 

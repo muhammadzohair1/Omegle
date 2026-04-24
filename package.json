@@ -1,0 +1,20 @@
+{
+  "name": "omegle-smart-chat",
+  "version": "1.0.0",
+  "description": "Root wrapper for Smart Interest-Based Chat Platform",
+  "scripts": {
+    "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
+    "start:server": "cd server && npm start",
+    "start:client": "cd client && npm run dev",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.5.0",
+    "framer-motion": "^12.38.0",
+    "postcss": "^8.5.10",
+    "tailwindcss": "^4.2.4"
+  }
+}

@@ -66,14 +66,19 @@ const Chat = () => {
   useEffect(() => {
     initializeMedia().catch(err => console.error("Camera access denied:", err));
     
-    // Load NSFW model locally
+    // Load NSFW model
     const loadModel = async () => {
       try {
-        const model = await nsfwjs.load('/model/', { size: 224 });
+        console.log('Loading NSFW model from CDN...');
+        // Using the default CDN (Unpkg) because local files were corrupted
+        const model = await nsfwjs.load(); 
         setNsfwModel(model);
-        console.log('NSFW model loaded locally.');
+        console.log('NSFW model loaded successfully from CDN.');
+        addSystemMessage('🛡️ Safety Shield Active');
       } catch (err) {
         console.error('Failed to load NSFW model:', err);
+        addSystemMessage('❌ Safety Shield Failed to Load. Please refresh.');
+        alert('NSFW Model failed to load. Check internet connection.');
       }
     };
     loadModel();
@@ -108,13 +113,14 @@ const Chat = () => {
         if (remoteVideoRef.current && remoteVideoRef.current.readyState === 4) {
           try {
             const predictions = await nsfwModel.classify(remoteVideoRef.current);
-            console.log('NSFW Predictions:', predictions);
-            const isNsfw = predictions.some(p => 
-              ['Porn', 'Hentai', 'Sexy'].includes(p.className) && p.probability > 0.4
+            console.log('AI Predictions:', predictions.map(p => `${p.className}: ${Math.round(p.probability * 100)}%`).join(', '));
+            
+            const highestNsfw = predictions.find(p => 
+              ['Porn', 'Hentai', 'Sexy'].includes(p.className) && p.probability > 0.35
             );
-            if (isNsfw) {
-              const highestNsfw = predictions.find(p => ['Porn', 'Hentai', 'Sexy'].includes(p.className));
-              console.log('NSFW MATCH FOUND:', highestNsfw);
+
+            if (highestNsfw) {
+              console.log('NSFW ALERT:', highestNsfw);
               setIsRemoteBlurred(true);
               setShowNsfwPopup(true);
               setNsfwWarnings(prev => {

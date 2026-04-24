@@ -55,6 +55,7 @@ const Chat = () => {
   const [nsfwModel, setNsfwModel] = useState(null);
   const [nsfwWarnings, setNsfwWarnings] = useState(0);
   const [isRemoteBlurred, setIsRemoteBlurred] = useState(false);
+  const [showNsfwPopup, setShowNsfwPopup] = useState(false);
   
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -110,18 +111,23 @@ const Chat = () => {
               ['Porn', 'Hentai', 'Sexy'].includes(p.className) && p.probability > 0.6
             );
             if (isNsfw) {
+              const highestNsfw = predictions.find(p => ['Porn', 'Hentai', 'Sexy'].includes(p.className));
               setIsRemoteBlurred(true);
+              setShowNsfwPopup(true);
               setNsfwWarnings(prev => {
                 const newCount = prev + 1;
-                addSystemMessage(`⚠️ Inappropriate content detected (${newCount}/3 warnings). Video blurred.`);
+                addSystemMessage(`⚠️ NSFW DETECTED: ${highestNsfw.className} (${Math.round(highestNsfw.probability * 100)}% certainty). Warning ${newCount}/3.`);
                 if (newCount >= 3) {
-                  addSystemMessage('Maximum warnings reached. Auto-reporting and disconnecting...');
+                  addSystemMessage('Auto-reporting for sensitive content...');
                   setTimeout(() => {
                     submitReport('inappropriate', true);
                   }, 1500);
                 }
                 return newCount;
               });
+              
+              // Hide popup after 3 seconds but keep blur
+              setTimeout(() => setShowNsfwPopup(false), 3000);
             }
           } catch (e) {
             console.log('NSFW Classification error:', e);
@@ -176,6 +182,7 @@ const Chat = () => {
       setIsSkipping(false);
       setNsfwWarnings(0);
       setIsRemoteBlurred(false);
+      setShowNsfwPopup(false);
       addSystemMessage("You're connected with a random stranger!");
       if (data.partnerInterests) {
         addSystemMessage(`They also selected: ${data.partnerInterests.category}`);
@@ -402,11 +409,33 @@ const Chat = () => {
                     style={{ filter: isRemoteBlurred ? 'blur(20px)' : 'none' }}
                   />
                   {isRemoteBlurred && !partnerVideoOff && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
-                      <AlertCircle size={40} className="text-red-500 mb-2 opacity-80" />
-                      <p className="text-white font-bold bg-black/50 px-3 py-1 rounded-full text-sm">Content Blurred</p>
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-xl flex flex-col items-center justify-center z-10 pointer-events-none transition-all">
+                      <AlertCircle size={60} className="text-red-500 mb-4 animate-pulse" />
+                      <p className="text-white font-black text-lg tracking-wider uppercase bg-red-600/80 px-6 py-2 rounded-lg shadow-2xl">
+                        Sensitive Content Blurred
+                      </p>
+                      <p className="text-white/60 text-xs mt-2 italic">Moderation active</p>
                     </div>
                   )}
+
+                  <AnimatePresence>
+                    {showNsfwPopup && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 50 }}
+                        className="absolute top-10 left-1/2 -translate-x-1/2 z-50 w-[90%]"
+                      >
+                        <div className="bg-red-600 text-white p-4 rounded-2xl shadow-[0_0_30px_rgba(220,38,38,0.5)] flex items-center gap-3 border border-red-400/30">
+                          <AlertCircle size={24} className="flex-shrink-0" />
+                          <div>
+                            <p className="font-bold text-sm">NSFW CONTENT DETECTED</p>
+                            <p className="text-[10px] opacity-90">Stranger's video has been blurred for your safety.</p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   {partnerVideoOff && (
                     <div className="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center text-gray-500 z-10 animate-fade-in">
                       <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mb-4">

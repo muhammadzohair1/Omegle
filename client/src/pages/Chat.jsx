@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useWebRTC } from '../hooks/useWebRTC';
+import * as tf from '@tensorflow/tfjs';
+import * as nsfwjs from 'nsfwjs';
 import './Chat.css';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
@@ -47,6 +49,10 @@ const Chat = () => {
   const [partnerVideoOff, setPartnerVideoOff] = useState(false);
   const [partnerMuted, setPartnerMuted] = useState(false);
   
+  const [nsfwModel, setNsfwModel] = useState(null);
+  const [nsfwWarnings, setNsfwWarnings] = useState(0);
+  const [isRemoteBlurred, setIsRemoteBlurred] = useState(false);
+  
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const localVideoRef = useRef(null);
@@ -55,6 +61,18 @@ const Chat = () => {
   // Initialize Camera on mount
   useEffect(() => {
     initializeMedia().catch(err => console.error("Camera access denied:", err));
+    
+    // Load NSFW model locally
+    const loadModel = async () => {
+      try {
+        const model = await nsfwjs.load('/model/', { size: 224 });
+        setNsfwModel(model);
+        console.log('NSFW model loaded locally.');
+      } catch (err) {
+        console.error('Failed to load NSFW model:', err);
+      }
+    };
+    loadModel();
   }, [initializeMedia]);
 
   // Attach local stream
@@ -76,6 +94,44 @@ const Chat = () => {
       });
     }
   }, [remoteStream]);
+
+  // NSFW Classification Loop
+  useEffect(() => {
+    let interval;
+    if (chatState === 'connected' && remoteStream && nsfwModel && remoteVideoRef.current) {
+      interval = setInterval(async () => {
+        if (remoteVideoRef.current && remoteVideoRef.current.readyState === 4) {
+          try {
+            const predictions = await nsfwModel.classify(remoteVideoRef.current);
+            const isNsfw = predictions.some(p => 
+              ['Porn', 'Hentai', 'Sexy'].includes(p.className) && p.probability > 0.6
+            );
+            if (isNsfw) {
+              setIsRemoteBlurred(true);
+              setNsfwWarnings(prev => {
+                const newCount = prev + 1;
+                addSystemMessage(`⚠️ Inappropriate content detected (${newCount}/3 warnings). Video blurred.`);
+                if (newCount >= 3) {
+                  addSystemMessage('Maximum warnings reached. Auto-reporting and disconnecting...');
+                  setTimeout(() => {
+                    submitReport('inappropriate', true);
+                  }, 1500);
+                }
+                return newCount;
+              });
+            }
+          } catch (e) {
+            console.log('NSFW Classification error:', e);
+          }
+        }
+      }, 3000);
+    }
+    
+    // Cleanup on disconnect or unmount to save CPU
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [chatState, remoteStream, nsfwModel]);
 
   useEffect(() => {
     scrollToBottom();
@@ -115,6 +171,8 @@ const Chat = () => {
       setPartnerInterests(data.partnerInterests);
       setMessages([]);
       setIsSkipping(false);
+      setNsfwWarnings(0);
+      setIsRemoteBlurred(false);
       addSystemMessage("You're connected with a random stranger!");
       if (data.partnerInterests) {
         addSystemMessage(`They also selected: ${data.partnerInterests.category}`);
@@ -223,23 +281,29 @@ const Chat = () => {
     }
   };
 
-  const handleReport = async () => {
-    if (!reportReason || !currentUser) return;
+  const submitReport = async (reason, isAuto = false) => {
+    if (!currentUser) return;
     try {
       await addDoc(collection(db, 'reports'), {
         reporterUid: currentUser.uid,
         reportedAt: serverTimestamp(),
-        reason: reportReason,
+        reason: reason,
         partnerInterests: partnerInterests,
         chatStateAtReport: chatState,
+        autoReport: isAuto
       });
-      addSystemMessage('Report submitted.');
+      addSystemMessage(isAuto ? 'User automatically reported.' : 'Report submitted.');
     } catch (error) {
       console.error('Error submitting report:', error);
     }
+    handleSkip();
+  };
+
+  const handleReport = async () => {
+    if (!reportReason) return;
+    await submitReport(reportReason);
     setShowReportModal(false);
     setReportReason('');
-    handleSkip();
   };
 
   const handleInputChange = (e) => {
@@ -331,8 +395,15 @@ const Chat = () => {
                     ref={remoteVideoRef}
                     autoPlay
                     playsInline
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-all duration-500"
+                    style={{ filter: isRemoteBlurred ? 'blur(20px)' : 'none' }}
                   />
+                  {isRemoteBlurred && !partnerVideoOff && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
+                      <AlertCircle size={40} className="text-red-500 mb-2 opacity-80" />
+                      <p className="text-white font-bold bg-black/50 px-3 py-1 rounded-full text-sm">Content Blurred</p>
+                    </div>
+                  )}
                   {partnerVideoOff && (
                     <div className="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center text-gray-500 z-10 animate-fade-in">
                       <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mb-4">

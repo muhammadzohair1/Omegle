@@ -23,15 +23,17 @@ export const useWebRTC = (socket) => {
   const initializeMedia = useCallback(async (currentFacingMode = 'user') => {
     try {
       console.log('Requesting camera access...');
-      // Stop existing tracks if any
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(t => t.stop());
-      }
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: currentFacingMode },
         audio: true,
       });
+
+      // Stop existing tracks AFTER getting the new stream to avoid black screen
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(t => t.stop());
+      }
+
       setLocalStream(stream);
       localStreamRef.current = stream;
       setFacingMode(currentFacingMode);
@@ -39,15 +41,21 @@ export const useWebRTC = (socket) => {
 
       // If PC exists, replace the track dynamically
       if (peerConnectionRef.current) {
-        const videoTrack = stream.getVideoTracks()[0];
-        const audioTrack = stream.getAudioTracks()[0];
-        const senders = peerConnectionRef.current.getSenders();
-        
-        const videoSender = senders.find(s => s.track && s.track.kind === 'video');
-        if (videoSender && videoTrack) videoSender.replaceTrack(videoTrack);
-
-        const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
-        if (audioSender && audioTrack) audioSender.replaceTrack(audioTrack);
+        const pc = peerConnectionRef.current;
+        stream.getTracks().forEach(track => {
+          const sender = pc.getSenders().find(s => s.track && s.track.kind === track.kind);
+          if (sender) {
+            sender.replaceTrack(track).catch(err => console.error('Error replacing track:', err));
+          } else {
+            // Find an empty sender to replace, or add a new track
+            const emptySender = pc.getSenders().find(s => !s.track);
+            if (emptySender) {
+               emptySender.replaceTrack(track).catch(e => console.error(e));
+            } else {
+               try { pc.addTrack(track, stream); } catch(e) {}
+            }
+          }
+        });
       }
 
       return stream;
@@ -122,22 +130,6 @@ export const useWebRTC = (socket) => {
     peerConnectionRef.current = pc;
     return pc;
   }, [socket]);
-
-  // Sync local stream tracks if available after PC creation (e.g. late camera start)
-  useEffect(() => {
-    if (localStream && peerConnectionRef.current) {
-      const pc = peerConnectionRef.current;
-      const senders = pc.getSenders();
-      
-      localStream.getTracks().forEach(track => {
-        const alreadyAdded = senders.find(s => s.track === track);
-        if (!alreadyAdded) {
-          console.log('Syncing late track to PC:', track.kind);
-          pc.addTrack(track, localStream);
-        }
-      });
-    }
-  }, [localStream]);
 
   useEffect(() => {
     if (!socket) return;

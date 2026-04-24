@@ -457,12 +457,14 @@ const Chat = () => {
             {/* In-Video Controls */}
             <div className="video-actions absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 z-30">
                <button 
+                type="button"
                 onClick={toggleVideo} 
                 className={`w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${isVideoOff ? 'bg-red-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
               >
                 {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
               </button>
               <button 
+                type="button"
                 onClick={toggleMute} 
                 className={`w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${isMuted ? 'bg-red-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
               >
@@ -471,6 +473,7 @@ const Chat = () => {
 
               {/* Mobile Only: Switch Camera */}
               <button 
+                type="button"
                 onClick={toggleCamera} 
                 className="w-12 h-12 flex md:hidden items-center justify-center rounded-full backdrop-blur-md transition-all bg-white/10 hover:bg-white/20 text-white border border-white/20"
                 title="Switch Camera"
@@ -480,6 +483,7 @@ const Chat = () => {
 
               {/* Mobile Only: Flashlight */}
               <button 
+                type="button"
                 onClick={toggleFlashlight} 
                 className={`w-12 h-12 flex md:hidden items-center justify-center rounded-full backdrop-blur-md transition-all ${isFlashlightOn ? 'bg-yellow-500 text-black' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
                 title="Toggle Flashlight"

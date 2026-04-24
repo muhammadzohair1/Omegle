@@ -22,17 +22,19 @@ export const useWebRTC = (socket) => {
 
   const initializeMedia = useCallback(async (currentFacingMode = 'user') => {
     try {
-      console.log('Requesting camera access...');
+      console.log('Requesting camera access with mode:', currentFacingMode);
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: currentFacingMode },
-        audio: true,
-      });
-
-      // Stop existing tracks AFTER getting the new stream to avoid black screen
+      // Stop existing tracks BEFORE getting the new stream (Crucial for many mobile browsers)
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(t => t.stop());
+        localStreamRef.current = null;
       }
+
+      const constraints = {
+        video: { facingMode: { ideal: currentFacingMode } },
+        audio: true,
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
       setLocalStream(stream);
       localStreamRef.current = stream;
@@ -67,29 +69,47 @@ export const useWebRTC = (socket) => {
     }
   }, []);
 
-  const toggleCamera = useCallback(() => {
-    const newMode = facingMode === 'user' ? 'environment' : 'user';
-    initializeMedia(newMode);
+  const toggleCamera = useCallback(async () => {
+    try {
+      const newMode = facingMode === 'user' ? 'environment' : 'user';
+      console.log('Switching camera from', facingMode, 'to', newMode);
+      await initializeMedia(newMode);
+    } catch (err) {
+      console.error('Toggle camera error:', err);
+      alert('Error switching camera: ' + err.message);
+    }
   }, [facingMode, initializeMedia]);
 
   const toggleFlashlight = useCallback(async () => {
-    if (!localStreamRef.current) return;
+    if (!localStreamRef.current) {
+      console.warn('No local stream to toggle flashlight');
+      return;
+    }
     const videoTrack = localStreamRef.current.getVideoTracks()[0];
-    if (!videoTrack) return;
+    if (!videoTrack) {
+      console.warn('No video track found for flashlight');
+      return;
+    }
     
     try {
-      // Check if getCapabilities is available and torch is supported
-      if (videoTrack.getCapabilities && videoTrack.getCapabilities().torch) {
+      // Some browsers don't support getCapabilities, so we check if it exists
+      const capabilities = videoTrack.getCapabilities ? videoTrack.getCapabilities() : {};
+      console.log('Track capabilities:', capabilities);
+
+      if (capabilities.torch !== undefined) {
         const newFlashlightState = !isFlashlightOn;
         await videoTrack.applyConstraints({
           advanced: [{ torch: newFlashlightState }]
         });
         setIsFlashlightOn(newFlashlightState);
+        console.log('Flashlight toggled to:', newFlashlightState);
       } else {
+        alert('Flashlight (Torch) is not supported on this camera/device.');
         console.warn('Flashlight not supported on this device/camera.');
       }
     } catch (err) {
       console.error('Error toggling flashlight:', err);
+      alert('Could not toggle flashlight: ' + err.message);
     }
   }, [isFlashlightOn]);
 

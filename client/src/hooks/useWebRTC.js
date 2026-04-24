@@ -13,20 +13,43 @@ export const useWebRTC = (socket) => {
   const [connectionState, setConnectionState] = useState('disconnected');
   const [error, setError] = useState(null);
 
+  const [facingMode, setFacingMode] = useState('user');
+  const [isFlashlightOn, setIsFlashlightOn] = useState(false);
+
   const peerConnectionRef = useRef(null);
   const localStreamRef = useRef(null);
   const pendingCandidates = useRef([]);
 
-  const initializeMedia = useCallback(async () => {
+  const initializeMedia = useCallback(async (currentFacingMode = 'user') => {
     try {
       console.log('Requesting camera access...');
+      // Stop existing tracks if any
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(t => t.stop());
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: { facingMode: currentFacingMode },
         audio: true,
       });
-      console.log('Camera access granted:', stream.id);
       setLocalStream(stream);
       localStreamRef.current = stream;
+      setFacingMode(currentFacingMode);
+      setIsFlashlightOn(false);
+
+      // If PC exists, replace the track dynamically
+      if (peerConnectionRef.current) {
+        const videoTrack = stream.getVideoTracks()[0];
+        const audioTrack = stream.getAudioTracks()[0];
+        const senders = peerConnectionRef.current.getSenders();
+        
+        const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+        if (videoSender && videoTrack) videoSender.replaceTrack(videoTrack);
+
+        const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
+        if (audioSender && audioTrack) audioSender.replaceTrack(audioTrack);
+      }
+
       return stream;
     } catch (err) {
       console.warn('Camera busy or access denied. Continuing without local video:', err.name);
@@ -35,6 +58,32 @@ export const useWebRTC = (socket) => {
       return null;
     }
   }, []);
+
+  const toggleCamera = useCallback(() => {
+    const newMode = facingMode === 'user' ? 'environment' : 'user';
+    initializeMedia(newMode);
+  }, [facingMode, initializeMedia]);
+
+  const toggleFlashlight = useCallback(async () => {
+    if (!localStreamRef.current) return;
+    const videoTrack = localStreamRef.current.getVideoTracks()[0];
+    if (!videoTrack) return;
+    
+    try {
+      // Check if getCapabilities is available and torch is supported
+      if (videoTrack.getCapabilities && videoTrack.getCapabilities().torch) {
+        const newFlashlightState = !isFlashlightOn;
+        await videoTrack.applyConstraints({
+          advanced: [{ torch: newFlashlightState }]
+        });
+        setIsFlashlightOn(newFlashlightState);
+      } else {
+        console.warn('Flashlight not supported on this device/camera.');
+      }
+    } catch (err) {
+      console.error('Error toggling flashlight:', err);
+    }
+  }, [isFlashlightOn]);
 
   const createPeerConnection = useCallback(() => {
     console.log('Creating RTCPeerConnection...');
@@ -199,6 +248,10 @@ export const useWebRTC = (socket) => {
     startCall,
     endCall,
     initializeMedia,
+    toggleCamera,
+    toggleFlashlight,
+    facingMode,
+    isFlashlightOn
   };
 };
 

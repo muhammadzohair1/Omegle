@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import { 
   Send, Loader, UserX, AlertCircle, RefreshCw, Flag, X, 
-  Video, VideoOff, Mic, MicOff, MessageCircle
+  Video, VideoOff, Mic, MicOff, MessageCircle, SwitchCamera, Flashlight, FlashlightOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
@@ -32,7 +32,10 @@ const Chat = () => {
     initializeMedia, 
     startCall, 
     endCall,
-    error: webrtcError
+    error: webrtcError,
+    toggleCamera,
+    toggleFlashlight,
+    isFlashlightOn
   } = useWebRTC(socket);
   
   const [chatState, setChatState] = useState('idle');
@@ -465,8 +468,26 @@ const Chat = () => {
               >
                 {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
               </button>
+
+              {/* Mobile Only: Switch Camera */}
+              <button 
+                onClick={toggleCamera} 
+                className="w-12 h-12 flex md:hidden items-center justify-center rounded-full backdrop-blur-md transition-all bg-white/10 hover:bg-white/20 text-white border border-white/20"
+                title="Switch Camera"
+              >
+                <SwitchCamera size={20} />
+              </button>
+
+              {/* Mobile Only: Flashlight */}
+              <button 
+                onClick={toggleFlashlight} 
+                className={`w-12 h-12 flex md:hidden items-center justify-center rounded-full backdrop-blur-md transition-all ${isFlashlightOn ? 'bg-yellow-500 text-black' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
+                title="Toggle Flashlight"
+              >
+                {isFlashlightOn ? <FlashlightOff size={20} /> : <Flashlight size={20} />}
+              </button>
               
-              <div className="w-px h-8 bg-white/20 mx-2"></div>
+              <div className="w-px h-8 bg-white/20 mx-2 hidden sm:block"></div>
 
               {chatState === 'connected' ? (
                 <button 

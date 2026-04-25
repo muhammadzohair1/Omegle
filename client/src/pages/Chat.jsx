@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
-import { 
-  Send, Loader, UserX, AlertCircle, RefreshCw, Flag, X, 
+import {
+  Send, Loader, UserX, AlertCircle, RefreshCw, Flag, X,
   Video, VideoOff, Mic, MicOff, MessageCircle, SwitchCamera, Flashlight, FlashlightOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,19 +28,19 @@ const Chat = () => {
   const { currentUser, userInterests } = useAuth();
   const navigate = useNavigate();
   const [socket, setSocket] = useState(null);
-  
-  const { 
-    localStream, 
-    remoteStream, 
-    initializeMedia, 
-    startCall, 
+
+  const {
+    localStream,
+    remoteStream,
+    initializeMedia,
+    startCall,
     endCall,
     error: webrtcError,
     toggleCamera,
     toggleFlashlight,
     isFlashlightOn
   } = useWebRTC(socket);
-  
+
   const [chatState, setChatState] = useState('idle');
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
@@ -54,7 +54,7 @@ const Chat = () => {
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [partnerVideoOff, setPartnerVideoOff] = useState(false);
   const [partnerMuted, setPartnerMuted] = useState(false);
-  
+
   const [nsfwModel, setNsfwModel] = useState(null);
   const [nsfwWarnings, setNsfwWarnings] = useState(0);
   const [isRemoteBlurred, setIsRemoteBlurred] = useState(false);
@@ -62,7 +62,7 @@ const Chat = () => {
   const [partnerUid, setPartnerUid] = useState(null);
   const [isBlurActive, setIsBlurActive] = useState(false);
   const [isModelLoading, setIsModelLoading] = useState(false);
-  
+
   const nsfwConsecutiveCountRef = useRef(0);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -76,13 +76,13 @@ const Chat = () => {
   // Initialize Camera on mount
   useEffect(() => {
     initializeMedia().catch(err => console.error("Camera access denied:", err));
-    
+
     // Load NSFW model
     const loadModel = async () => {
       try {
         console.log('Loading NSFW model from CDN...');
         // Using the default CDN (Unpkg) because local files were corrupted
-        const model = await nsfwjs.load(); 
+        const model = await nsfwjs.load();
         setNsfwModel(model);
         console.log('NSFW model loaded successfully from CDN.');
         addSystemMessage('🛡️ Safety Shield Active');
@@ -109,22 +109,22 @@ const Chat = () => {
       if (!canvasRef.current) return;
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
-      
+
       ctx.save();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       // Draw segmentation mask
       ctx.drawImage(results.segmentationMask, 0, 0, canvas.width, canvas.height);
-      
+
       // Draw the original image with "destination-atop" to only keep the person
       ctx.globalCompositeOperation = 'source-in';
       ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-      
+
       // Draw background (blurred)
       ctx.globalCompositeOperation = 'destination-over';
       ctx.filter = 'blur(15px)';
       ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-      
+
       ctx.restore();
     });
 
@@ -185,16 +185,16 @@ const Chat = () => {
           try {
             const predictions = await nsfwModel.classify(remoteVideoRef.current);
             console.log('AI Predictions:', predictions.map(p => `${p.className}: ${Math.round(p.probability * 100)}%`).join(', '));
-            
+
             // Only trigger for Porn or Hentai with 90%+ certainty
-            const highestNsfw = predictions.find(p => 
+            const highestNsfw = predictions.find(p =>
               ['Porn', 'Hentai'].includes(p.className) && p.probability > 0.90
             );
 
             if (highestNsfw) {
               nsfwConsecutiveCountRef.current += 1;
               console.log(`NSFW Consecutive Count: ${nsfwConsecutiveCountRef.current}/2`);
-              
+
               // Only blur if detected 2 times in a row
               if (nsfwConsecutiveCountRef.current >= 2) {
                 console.log('NSFW THRESHOLD REACHED:', highestNsfw);
@@ -211,7 +211,7 @@ const Chat = () => {
                   }
                   return newCount;
                 });
-                
+
                 // Hide popup quickly (2 seconds)
                 setTimeout(() => setShowNsfwPopup(false), 2000);
               }
@@ -227,14 +227,14 @@ const Chat = () => {
         }
       }, 3000);
     } else {
-      console.log('NSFW Loop conditions not met:', { 
-        chatState, 
-        hasRemoteStream: !!remoteStream, 
-        hasModel: !!nsfwModel, 
-        hasRef: !!remoteVideoRef.current 
+      console.log('NSFW Loop conditions not met:', {
+        chatState,
+        hasRemoteStream: !!remoteStream,
+        hasModel: !!nsfwModel,
+        hasRef: !!remoteVideoRef.current
       });
     }
-    
+
     // Cleanup on disconnect or unmount to save CPU
     return () => {
       if (interval) {
@@ -251,7 +251,7 @@ const Chat = () => {
   useEffect(() => {
     const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
-    
+
     // Auto-redirect if refresh happens (state is lost)
     // We wait a moment for the socket to initialize
     const timeout = setTimeout(() => {
@@ -304,7 +304,7 @@ const Chat = () => {
       if (data.partnerInterests) {
         addSystemMessage(`They also selected: ${data.partnerInterests.category}`);
       }
-      
+
       if (data.isInitiator) {
         console.log('Initiating WebRTC call...');
         startCall();
@@ -418,7 +418,7 @@ const Chat = () => {
       if (!canvasRef.current) return;
       const stream = canvasRef.current.captureStream(30);
       blurStreamRef.current = stream;
-      
+
       // We don't replace the actual WebRTC track here because it's complex, 
       // but we update the UI local video.
       // In a real app, we'd use replaceTrack in useWebRTC.
@@ -480,24 +480,24 @@ const Chat = () => {
           <div className="sidebar-section">
             <h3 className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-indigo-500"></div> Your Profile</h3>
             <div className="user-profile-mini p-3 bg-white/5 rounded-xl border border-white/10 mb-4">
-               <p className="text-sm font-semibold">{currentUser?.displayName}</p>
-               <p className="text-[10px] opacity-50 truncate">{currentUser?.email}</p>
+              <p className="text-sm font-semibold">{currentUser?.displayName}</p>
+              <p className="text-[10px] opacity-50 truncate">{currentUser?.email}</p>
             </div>
-            
+
             <h3>Your Interests</h3>
-                <div className="interest-tag-display">
-                  <span className="cat-badge">{userInterests?.category}</span>
-                  {userInterests?.subOptions?.map(sub => (
-                    <span key={sub} className="sub-badge">{sub}</span>
-                  ))}
-                </div>
-                {partnerMuted && (
-                  <div className="mt-4 p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-300 text-[10px] flex items-center gap-1">
-                    <MicOff size={12} /> Stranger is muted
-                  </div>
-                )}
+            <div className="interest-tag-display">
+              <span className="cat-badge">{userInterests?.category}</span>
+              {userInterests?.subOptions?.map(sub => (
+                <span key={sub} className="sub-badge">{sub}</span>
+              ))}
+            </div>
+            {partnerMuted && (
+              <div className="mt-4 p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-300 text-[10px] flex items-center gap-1">
+                <MicOff size={12} /> Stranger is muted
               </div>
-          
+            )}
+          </div>
+
           <div className="sidebar-section">
             <h3>Stranger Info</h3>
             {chatState === 'connected' ? (
@@ -533,52 +533,52 @@ const Chat = () => {
         {/* Center: Video Main Area */}
         <div className="video-main glass-panel overflow-hidden">
           <div className="video-display bg-gray-950 relative">
-              {/* Remote Video */}
-              {remoteStream ? (
-                <div className="w-full h-full relative">
-                  <video
-                    ref={remoteVideoRef}
-                    autoPlay
-                    playsInline
-                    className="w-full h-full object-cover transition-all duration-500"
-                    style={{ filter: isRemoteBlurred ? 'blur(20px)' : 'none' }}
-                  />
-                  {isRemoteBlurred && !partnerVideoOff && (
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-xl flex flex-col items-center justify-center z-10 pointer-events-none transition-all">
-                      <AlertCircle size={60} className="text-red-500 mb-4 animate-pulse" />
-                      <p className="text-white font-black text-lg tracking-wider uppercase bg-red-600/80 px-6 py-2 rounded-lg shadow-2xl">
-                        Sensitive Content Blurred
-                      </p>
-                      <p className="text-white/60 text-xs mt-2 italic">Moderation active</p>
-                    </div>
-                  )}
+            {/* Remote Video */}
+            {remoteStream ? (
+              <div className="w-full h-full relative">
+                <video
+                  ref={remoteVideoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-cover transition-all duration-500"
+                  style={{ filter: isRemoteBlurred ? 'blur(20px)' : 'none' }}
+                />
+                {isRemoteBlurred && !partnerVideoOff && (
+                  <div className="absolute inset-0 bg-black/40 backdrop-blur-xl flex flex-col items-center justify-center z-10 pointer-events-none transition-all">
+                    <AlertCircle size={60} className="text-red-500 mb-4 animate-pulse" />
+                    <p className="text-white font-black text-lg tracking-wider uppercase bg-red-600/80 px-6 py-2 rounded-lg shadow-2xl">
+                      Sensitive Content Blurred
+                    </p>
+                    <p className="text-white/60 text-xs mt-2 italic">Moderation active</p>
+                  </div>
+                )}
 
-                  <AnimatePresence>
-                    {showNsfwPopup && (
-                      <motion.div 
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        className="absolute top-6 right-6 z-50"
-                      >
-                        <div className="bg-red-600/90 backdrop-blur-md text-white px-4 py-2 rounded-xl shadow-xl flex items-center gap-2 border border-red-400/30">
-                          <AlertCircle size={18} className="animate-pulse" />
-                          <span className="font-bold text-xs">Sensitive Content Detected</span>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  {partnerVideoOff && (
-                    <div className="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center text-gray-500 z-10 animate-fade-in">
-                      <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mb-4">
-                        <VideoOff size={32} className="opacity-50" />
+                <AnimatePresence>
+                  {showNsfwPopup && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="absolute top-6 right-6 z-50"
+                    >
+                      <div className="bg-red-600/90 backdrop-blur-md text-white px-4 py-2 rounded-xl shadow-xl flex items-center gap-2 border border-red-400/30">
+                        <AlertCircle size={18} className="animate-pulse" />
+                        <span className="font-bold text-xs">Sensitive Content Detected</span>
                       </div>
-                      <p className="text-sm font-bold text-gray-400">Stranger has turned off camera</p>
-                      <p className="text-xs opacity-50">Audio may still be active</p>
-                    </div>
+                    </motion.div>
                   )}
-                </div>
-              ) : (
+                </AnimatePresence>
+                {partnerVideoOff && (
+                  <div className="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center text-gray-500 z-10 animate-fade-in">
+                    <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mb-4">
+                      <VideoOff size={32} className="opacity-50" />
+                    </div>
+                    <p className="text-sm font-bold text-gray-400">Stranger has turned off camera</p>
+                    <p className="text-xs opacity-50">Audio may still be active</p>
+                  </div>
+                )}
+              </div>
+            ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 bg-slate-900/50">
                 <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mb-4 animate-pulse">
                   <VideoOff size={32} className="opacity-50" />
@@ -599,7 +599,7 @@ const Chat = () => {
                     muted
                     className={`w-full h-full object-cover mirror ${isBlurActive ? 'hidden' : 'block'}`}
                   />
-                  <canvas 
+                  <canvas
                     ref={canvasRef}
                     className={`w-full h-full object-cover mirror ${isBlurActive ? 'block' : 'hidden'}`}
                   />
@@ -623,26 +623,26 @@ const Chat = () => {
 
             {/* In-Video Controls */}
             <div className="video-actions absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 z-30">
-               <button 
+              <button
                 type="button"
-                onClick={toggleVideo} 
+                onClick={toggleVideo}
                 className={`w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${isVideoOff ? 'bg-red-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
                 title={isVideoOff ? "Turn Video On" : "Turn Video Off"}
               >
                 {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
               </button>
-              <button 
+              <button
                 type="button"
-                onClick={toggleMute} 
+                onClick={toggleMute}
                 className={`w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${isMuted ? 'bg-red-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
                 title={isMuted ? "Unmute" : "Mute"}
               >
                 {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
               </button>
 
-              <button 
+              <button
                 type="button"
-                onClick={toggleBlur} 
+                onClick={toggleBlur}
                 className={`w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${isBlurActive ? 'bg-indigo-600 text-white' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
                 title={isBlurActive ? "Disable Blur" : "Blur Background"}
               >
@@ -653,9 +653,9 @@ const Chat = () => {
               </button>
 
               {/* Mobile Only: Switch Camera */}
-              <button 
+              <button
                 type="button"
-                onClick={toggleCamera} 
+                onClick={toggleCamera}
                 className="w-12 h-12 flex md:hidden items-center justify-center rounded-full backdrop-blur-md transition-all bg-white/10 hover:bg-white/20 text-white border border-white/20"
                 title="Switch Camera"
               >
@@ -663,19 +663,19 @@ const Chat = () => {
               </button>
 
               {/* Mobile Only: Flashlight */}
-              <button 
+              <button
                 type="button"
-                onClick={toggleFlashlight} 
+                onClick={toggleFlashlight}
                 className={`w-12 h-12 flex md:hidden items-center justify-center rounded-full backdrop-blur-md transition-all ${isFlashlightOn ? 'bg-yellow-500 text-black' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
                 title="Toggle Flashlight"
               >
                 {isFlashlightOn ? <FlashlightOff size={20} /> : <Flashlight size={20} />}
               </button>
-              
+
               <div className="w-px h-8 bg-white/20 mx-2 hidden sm:block"></div>
 
               {chatState === 'connected' ? (
-                <button 
+                <button
                   onClick={handleSkip}
                   className="h-12 px-8 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-black rounded-full shadow-[0_0_20px_rgba(220,38,38,0.5)] transition-all flex items-center gap-2"
                 >
@@ -683,7 +683,7 @@ const Chat = () => {
                   STOP
                 </button>
               ) : (
-                <button 
+                <button
                   onClick={startLooking}
                   disabled={chatState === 'looking'}
                   className="h-12 px-8 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-black rounded-full shadow-[0_0_20px_rgba(79,70,229,0.5)] transition-all"
@@ -698,18 +698,18 @@ const Chat = () => {
         {/* Right Panel: Chat Box */}
         <div className="chat-panel glass-panel overflow-hidden flex flex-col">
           <div className="chat-panel-header p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
-             <div className="flex items-center gap-2 font-bold text-sm">
-                <MessageCircle size={18} className="text-indigo-400" />
-                Chatbox
-             </div>
-             {chatState === 'connected' && (
-                <button 
-                  onClick={() => setShowReportModal(true)}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400"
-                >
-                  <Flag size={14} />
-                </button>
-             )}
+            <div className="flex items-center gap-2 font-bold text-sm">
+              <MessageCircle size={18} className="text-indigo-400" />
+              Chatbox
+            </div>
+            {chatState === 'connected' && (
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400"
+              >
+                <Flag size={14} />
+              </button>
+            )}
           </div>
 
           <div className="message-list-panel flex-1 overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar">
@@ -732,13 +732,13 @@ const Chat = () => {
                 )}
               </div>
             ))}
-            
+
             {partnerTyping && (
-                <div className="msg-row stranger">
-                  <div className="typing-blob px-3 py-2 bg-white/5 rounded-xl flex gap-1">
-                    <span className="dot"></span><span className="dot"></span><span className="dot"></span>
-                  </div>
+              <div className="msg-row stranger">
+                <div className="typing-blob px-3 py-2 bg-white/5 rounded-xl flex gap-1">
+                  <span className="dot"></span><span className="dot"></span><span className="dot"></span>
                 </div>
+              </div>
             )}
             <div ref={messagesEndRef} />
           </div>
@@ -753,8 +753,8 @@ const Chat = () => {
               disabled={chatState !== 'connected'}
               autoComplete="off"
             />
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="chat-send-btn p-2 bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-all disabled:opacity-20"
               disabled={!inputValue.trim() || chatState !== 'connected'}
             >
@@ -783,12 +783,12 @@ const Chat = () => {
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold">Report User</h3>
-                <button onClick={() => setShowReportModal(false)}><X size={20}/></button>
+                <button onClick={() => setShowReportModal(false)}><X size={20} /></button>
               </div>
               <div className="space-y-2 mb-6">
                 {REPORT_REASONS.map(r => (
-                  <button 
-                    key={r.id} 
+                  <button
+                    key={r.id}
                     onClick={() => setReportReason(r.id)}
                     className={`w-full text-left p-3 rounded-xl border ${reportReason === r.id ? 'border-indigo-500 bg-indigo-500/20' : 'border-white/10 bg-white/5'}`}
                   >

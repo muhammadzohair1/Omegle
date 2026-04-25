@@ -78,9 +78,8 @@ const Admin = () => {
                     {report.reporterUid}
                   </td>
                   <td className="p-4 border-b border-white/5">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
-                      report.reason === 'inappropriate' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${report.reason === 'inappropriate' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+                      }`}>
                       {report.reason}
                     </span>
                   </td>
@@ -97,14 +96,14 @@ const Admin = () => {
                   </td>
                   <td className="p-4 border-b border-white/5 text-right">
                     <div className="flex justify-end gap-2">
-                      <button 
+                      <button
                         onClick={() => handleBan(report.reportedUid)}
                         className="p-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white rounded-lg transition-all"
                         title="Ban Reported User"
                       >
                         <UserX size={16} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => deleteReport(report.id)}
                         className="p-2 bg-white/10 hover:bg-white/20 text-gray-400 rounded-lg transition-all"
                         title="Dismiss Report"

@@ -8,6 +8,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+      },
       includeAssets: ['favicon.svg', 'pwa-icon-512.png'],
       manifest: {
         name: 'SmartChat - Random Video Chat',

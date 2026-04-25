@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Root wrapper for Smart Interest-Based Chat Platform",
   "scripts": {
-    "start": "npm install && concurrently \"npm run start:server\" \"npm run start:client\"",
+    "install-server": "cd server && npm install",
+    "start": "npm run install-server && cd server && node index.js",
     "start:server": "cd server && npm start",
     "start:client": "cd client && npm run dev",
     "install:all": "npm install && cd server && npm install && cd ../client && npm install"

@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import InterestSelector from './pages/InterestSelector';
 import Chat from './pages/Chat';
 import Admin from './pages/Admin';
+import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
 // Protected Route Wrapper
@@ -42,7 +43,9 @@ function App() {
             
             <Route path="/chat" element={
               <RequireInterestsRoute>
-                <Chat />
+                <ErrorBoundary>
+                  <Chat />
+                </ErrorBoundary>
               </RequireInterestsRoute>
             } />
 

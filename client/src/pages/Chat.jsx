@@ -155,6 +155,20 @@ const Chat = () => {
       if (selfieSegmentationRef.current) selfieSegmentationRef.current.close();
     };
   }, []);
+  
+  // Online/Offline Listeners
+  useEffect(() => {
+    const handleOnline = () => addSystemMessage('🌐 Back online! Connection restored.');
+    const handleOffline = () => addSystemMessage('📶 You are offline. Please check your internet connection.');
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const processFrame = async () => {
     if (isBlurActive && localVideoRef.current && selfieSegmentationRef.current) {

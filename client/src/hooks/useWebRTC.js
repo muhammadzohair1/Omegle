@@ -129,6 +129,7 @@ export const useWebRTC = (socket) => {
     pc.ontrack = (event) => {
       console.log('Remote tracks received:', event.streams[0]);
       if (event.streams && event.streams[0]) {
+        // Use the first stream to avoid assignment issues
         setRemoteStream(event.streams[0]);
       }
     };
@@ -214,10 +215,20 @@ export const useWebRTC = (socket) => {
 
   const startCall = useCallback(async () => {
     try {
+      // Wait for local stream to be ready if it's still initializing
+      let retryCount = 0;
+      while (!localStreamRef.current && retryCount < 10) {
+        console.log('Waiting for local stream before offer...');
+        await new Promise(r => setTimeout(r, 200));
+        retryCount++;
+      }
+
       console.log('Starting WebRTC handshake...');
       const pc = peerConnectionRef.current || createPeerConnection();
 
-      // Ensure tracks are added before creating offer
+      // Small delay (200ms) to allow tracks to attach and ICE to start
+      await new Promise(r => setTimeout(r, 200));
+
       const offer = await pc.createOffer({
         offerToReceiveAudio: true,
         offerToReceiveVideo: true

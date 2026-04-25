@@ -372,6 +372,14 @@ const Chat = () => {
     };
   }, [socket, startCall, endCall]);
 
+  // Handle connection failure/timeout
+  useEffect(() => {
+    if (connectionState === 'failed') {
+      addSystemMessage('⚠️ Connection lost or failed. Finding new partner...');
+      handleSkip();
+    }
+  }, [connectionState]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -559,9 +567,17 @@ const Chat = () => {
                   ref={remoteVideoRef}
                   autoPlay
                   playsInline
+                  onLoadedMetadata={(e) => e.target.play().catch(err => console.error("Remote play blocked", err))}
                   className="w-full h-full object-cover transition-all duration-500"
                   style={{ filter: isRemoteBlurred ? 'blur(20px)' : 'none' }}
                 />
+                {!remoteStream && chatState === 'connected' && (
+                  <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center text-white z-20">
+                    <Loader className="animate-spin mb-4 text-indigo-500" size={32} />
+                    <p className="text-sm font-bold tracking-widest uppercase">Establishing Secure Connection...</p>
+                    <p className="text-[10px] opacity-50 mt-2">Waiting for remote video tracks</p>
+                  </div>
+                )}
                 {isRemoteBlurred && !partnerVideoOff && (
                   <div className="absolute inset-0 bg-black/40 backdrop-blur-xl flex flex-col items-center justify-center z-10 pointer-events-none transition-all">
                     <AlertCircle size={60} className="text-red-500 mb-4 animate-pulse" />
@@ -616,6 +632,7 @@ const Chat = () => {
                     autoPlay
                     playsInline
                     muted
+                    onLoadedMetadata={(e) => e.target.play().catch(err => console.error("Local play blocked", err))}
                     className={`w-full h-full object-cover mirror ${isBlurActive ? 'hidden' : 'block'}`}
                   />
                   <canvas

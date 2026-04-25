@@ -118,6 +118,7 @@ export const useWebRTC = (socket) => {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
     pc.onicecandidate = (event) => {
+      // Only send if candidate is not null
       if (event.candidate && socket) {
         console.log('Sending ICE candidate');
         socket.emit('webrtc_ice_candidate', {
@@ -137,6 +138,14 @@ export const useWebRTC = (socket) => {
     pc.onconnectionstatechange = () => {
       console.log('Connection state change:', pc.connectionState);
       setConnectionState(pc.connectionState);
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      console.log('ICE Connection state:', pc.iceConnectionState);
+      if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+        console.warn('WebRTC Connection failed or disconnected. Attempting to notify UI...');
+        setConnectionState('failed');
+      }
     };
 
     // Pre-load tracks before offer/answer if stream is available

@@ -638,9 +638,8 @@ const Chat = () => {
         {/* Center: Video Main Area */}
         <div className="video-main glass-panel overflow-hidden">
           <div className="video-display bg-gray-950 relative">
-            {/* Remote Video */}
             {remoteStream ? (
-              <div className="w-full h-full relative">
+              <div className="remote-video-container">
                 <video
                   ref={remoteVideoRef}
                   autoPlay
@@ -650,54 +649,33 @@ const Chat = () => {
                   style={{ filter: isRemoteBlurred ? 'blur(20px)' : 'none' }}
                 />
                 {!remoteStream && chatState === 'connected' && (
-                  <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center text-white z-20">
+                  <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl flex flex-col items-center justify-center text-white z-20">
                     <Loader className="animate-spin mb-4 text-indigo-500" size={32} />
-                    <p className="text-sm font-bold tracking-widest uppercase">Establishing Secure Connection...</p>
-                    <p className="text-[10px] opacity-50 mt-2">Waiting for remote video tracks</p>
+                    <p className="text-sm font-black tracking-widest uppercase">Syncing Stream...</p>
                   </div>
                 )}
-                {isRemoteBlurred && !partnerVideoOff && (
-                  <div className="absolute inset-0 bg-black/40 backdrop-blur-xl flex flex-col items-center justify-center z-10 pointer-events-none transition-all">
-                    <AlertCircle size={60} className="text-red-500 mb-4 animate-pulse" />
-                    <p className="text-white font-black text-lg tracking-wider uppercase bg-red-600/80 px-6 py-2 rounded-lg shadow-2xl">
-                      Sensitive Content Blurred
-                    </p>
-                    <p className="text-white/60 text-xs mt-2 italic">Moderation active</p>
-                  </div>
-                )}
-
                 <AnimatePresence>
-                  {showNsfwPopup && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className="absolute top-6 right-6 z-50"
+                  {isRemoteBlurred && !partnerVideoOff && (
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 bg-black/60 backdrop-blur-2xl flex flex-col items-center justify-center z-10"
                     >
-                      <div className="bg-red-600/90 backdrop-blur-md text-white px-4 py-2 rounded-xl shadow-xl flex items-center gap-2 border border-red-400/30">
-                        <AlertCircle size={18} className="animate-pulse" />
-                        <span className="font-bold text-xs">Sensitive Content Detected</span>
-                      </div>
+                      <AlertCircle size={64} className="text-red-500 mb-4 animate-pulse" />
+                      <p className="text-white font-black text-xl tracking-tight uppercase px-8 py-3 bg-red-600/20 border border-red-500/30 rounded-2xl">
+                        Shield Active
+                      </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
-                {partnerVideoOff && (
-                  <div className="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center text-gray-500 z-10 animate-fade-in">
-                    <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mb-4">
-                      <VideoOff size={32} className="opacity-50" />
-                    </div>
-                    <p className="text-sm font-bold text-gray-400">Stranger has turned off camera</p>
-                    <p className="text-xs opacity-50">Audio may still be active</p>
-                  </div>
-                )}
               </div>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 bg-slate-900/50">
-                <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mb-4 animate-pulse">
-                  <VideoOff size={32} className="opacity-50" />
+              <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 bg-slate-950">
+                <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 animate-pulse-glow">
+                  <VideoOff size={32} className="opacity-30" />
                 </div>
-                <p className="text-sm font-medium">Waiting for partner...</p>
-                {chatState === 'looking' && <p className="text-xs opacity-50 mt-1">Expanding search net...</p>}
+                <p className="text-sm font-bold tracking-widest uppercase opacity-40">Finding a connection...</p>
               </div>
             )}
 
@@ -733,78 +711,73 @@ const Chat = () => {
                   <VideoOff size={24} className="text-red-500" />
                 </div>
               )}
-            </div>
-
-            {/* In-Video Controls */}
-            <div className="video-actions absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 z-30">
-              <button
-                type="button"
-                onClick={toggleVideo}
-                className={`w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${isVideoOff ? 'bg-red-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
-                title={isVideoOff ? "Turn Video On" : "Turn Video Off"}
-              >
-                {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
-              </button>
-              <button
-                type="button"
-                onClick={toggleMute}
-                className={`w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${isMuted ? 'bg-red-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
-                title={isMuted ? "Unmute" : "Mute"}
-              >
-                {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
-              </button>
-
-              <button
-                type="button"
-                onClick={toggleBlur}
-                className={`w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${isBlurActive ? 'bg-indigo-600 text-white' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
-                title={isBlurActive ? "Disable Blur" : "Blur Background"}
-              >
-                <div className="relative">
-                  <UserX size={20} className={isBlurActive ? "opacity-100" : "opacity-50"} />
-                  {!isBlurActive && <div className="absolute inset-0 flex items-center justify-center"><div className="w-4 h-px bg-white rotate-45"></div></div>}
-                </div>
-              </button>
-
-              {/* Mobile Only: Switch Camera */}
-              <button
-                type="button"
-                onClick={toggleCamera}
-                className="w-12 h-12 flex md:hidden items-center justify-center rounded-full backdrop-blur-md transition-all bg-white/10 hover:bg-white/20 text-white border border-white/20"
-                title="Switch Camera"
-              >
-                <SwitchCamera size={20} />
-              </button>
-
-              {/* Mobile Only: Flashlight */}
-              <button
-                type="button"
-                onClick={toggleFlashlight}
-                className={`w-12 h-12 flex md:hidden items-center justify-center rounded-full backdrop-blur-md transition-all ${isFlashlightOn ? 'bg-yellow-500 text-black' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
-                title="Toggle Flashlight"
-              >
-                {isFlashlightOn ? <FlashlightOff size={20} /> : <Flashlight size={20} />}
-              </button>
-
-              <div className="w-px h-8 bg-white/20 mx-2 hidden sm:block"></div>
-
-              {chatState === 'connected' ? (
+              {/* In-Video Controls */}
+              <div className="video-actions glass-panel shadow-2xl">
                 <button
-                  onClick={handleSkip}
-                  className="h-12 px-8 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-black rounded-full shadow-[0_0_20px_rgba(220,38,38,0.5)] transition-all flex items-center gap-2"
+                  type="button"
+                  onClick={toggleVideo}
+                  className={`action-btn ${isVideoOff ? 'danger' : ''}`}
+                  title={isVideoOff ? "Turn Video On" : "Turn Video Off"}
                 >
-                  <RefreshCw size={20} className={isSkipping ? "animate-spin" : ""} />
-                  STOP
+                  {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
                 </button>
-              ) : (
                 <button
-                  onClick={startLooking}
-                  disabled={chatState === 'looking'}
-                  className="h-12 px-8 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-black rounded-full shadow-[0_0_20px_rgba(79,70,229,0.5)] transition-all"
+                  type="button"
+                  onClick={toggleMute}
+                  className={`action-btn ${isMuted ? 'danger' : ''}`}
+                  title={isMuted ? "Unmute" : "Mute"}
                 >
-                  {chatState === 'looking' ? 'FINDING...' : 'START'}
+                  {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
                 </button>
-              )}
+
+                <button
+                  type="button"
+                  onClick={toggleBlur}
+                  className={`action-btn ${isBlurActive ? 'active-purple' : ''}`}
+                  title={isBlurActive ? "Disable Blur" : "Blur Background"}
+                >
+                  <UserX size={20} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={toggleCamera}
+                  className="action-btn active-blue md:hidden"
+                  title="Switch Camera"
+                >
+                  <SwitchCamera size={20} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={toggleFlashlight}
+                  className={`action-btn ${isFlashlightOn ? 'active-purple' : ''} md:hidden`}
+                  title="Toggle Flashlight"
+                >
+                  {isFlashlightOn ? <FlashlightOff size={20} /> : <Flashlight size={20} />}
+                </button>
+
+                <div className="w-px h-8 bg-white/10 mx-2 hidden sm:block"></div>
+
+                {chatState === 'connected' ? (
+                  <button
+                    onClick={handleSkip}
+                    className="h-12 px-8 bg-white text-black font-black rounded-full hover:bg-red-500 hover:text-white transition-all flex items-center gap-2"
+                  >
+                    <RefreshCw size={18} className={isSkipping ? 'animate-spin' : ''} />
+                    NEXT
+                  </button>
+                ) : (
+                  <button
+                    onClick={startLooking}
+                    disabled={chatState === 'looking'}
+                    className="h-12 px-8 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-full shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {chatState === 'looking' ? <Loader className="animate-spin" size={18} /> : <Video size={18} />}
+                    {chatState === 'looking' ? 'SEARCHING' : 'START CHAT'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

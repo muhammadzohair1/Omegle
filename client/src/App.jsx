@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import InterestSelector from './pages/InterestSelector';
 import Chat from './pages/Chat';
+import Admin from './pages/Admin';
 import './index.css';
 
 // Protected Route Wrapper
@@ -44,6 +45,8 @@ function App() {
                 <Chat />
               </RequireInterestsRoute>
             } />
+
+            <Route path="/admin" element={<Admin />} />
             
             <Route path="/" element={<Navigate to="/chat" />} />
           </Routes>

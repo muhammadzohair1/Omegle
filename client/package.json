@@ -10,7 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mediapipe/selfie_segmentation": "^0.1.1675465747",
+    "@tensorflow-models/body-segmentation": "^1.0.2",
     "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-backend-webgl": "^4.22.0",
+    "@tensorflow/tfjs-converter": "^4.22.0",
+    "@tensorflow/tfjs-core": "^4.22.0",
     "firebase": "^12.12.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.8.0",
@@ -32,6 +37,7 @@
     "globals": "^17.5.0",
     "postcss": "^8.5.10",
     "tailwindcss": "^3.4.19",
-    "vite": "^8.0.10"
+    "vite": "^8.0.10",
+    "vite-plugin-pwa": "^1.2.0"
   }
 }

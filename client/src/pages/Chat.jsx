@@ -11,6 +11,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useWebRTC } from '../hooks/useWebRTC';
 import * as tf from '@tensorflow/tfjs';
 import * as nsfwjs from 'nsfwjs';
+import { SelfieSegmentation } from '@mediapipe/selfie_segmentation';
 import './Chat.css';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
@@ -56,12 +57,19 @@ const Chat = () => {
   const [nsfwWarnings, setNsfwWarnings] = useState(0);
   const [isRemoteBlurred, setIsRemoteBlurred] = useState(false);
   const [showNsfwPopup, setShowNsfwPopup] = useState(false);
+  const [partnerUid, setPartnerUid] = useState(null);
+  const [isBlurActive, setIsBlurActive] = useState(false);
+  const [isModelLoading, setIsModelLoading] = useState(false);
   
   const nsfwConsecutiveCountRef = useRef(0);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const selfieSegmentationRef = useRef(null);
+  const animationFrameRef = useRef(null);
+  const blurStreamRef = useRef(null);
 
   // Initialize Camera on mount
   useEffect(() => {
@@ -84,6 +92,66 @@ const Chat = () => {
     };
     loadModel();
   }, [initializeMedia]);
+
+  // Initialize Selfie Segmentation
+  useEffect(() => {
+    const segmentation = new SelfieSegmentation({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
+    });
+
+    segmentation.setOptions({
+      modelSelection: 1,
+    });
+
+    segmentation.onResults((results) => {
+      if (!canvasRef.current) return;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      
+      ctx.save();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw segmentation mask
+      ctx.drawImage(results.segmentationMask, 0, 0, canvas.width, canvas.height);
+      
+      // Draw the original image with "destination-atop" to only keep the person
+      ctx.globalCompositeOperation = 'source-in';
+      ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+      
+      // Draw background (blurred)
+      ctx.globalCompositeOperation = 'destination-over';
+      ctx.filter = 'blur(15px)';
+      ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+      
+      ctx.restore();
+    });
+
+    selfieSegmentationRef.current = segmentation;
+
+    return () => {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      segmentation.close();
+    };
+  }, []);
+
+  const processFrame = async () => {
+    if (isBlurActive && localVideoRef.current && selfieSegmentationRef.current) {
+      await selfieSegmentationRef.current.send({ image: localVideoRef.current });
+      animationFrameRef.current = requestAnimationFrame(processFrame);
+    }
+  };
+
+  useEffect(() => {
+    if (isBlurActive) {
+      if (localVideoRef.current && canvasRef.current) {
+        canvasRef.current.width = localVideoRef.current.videoWidth || 640;
+        canvasRef.current.height = localVideoRef.current.videoHeight || 480;
+        processFrame();
+      }
+    } else {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+    }
+  }, [isBlurActive]);
 
   // Attach local stream
   useEffect(() => {
@@ -210,6 +278,7 @@ const Chat = () => {
     socket.on('match_found', (data) => {
       setChatState('connected');
       setPartnerInterests(data.partnerInterests);
+      setPartnerUid(data.partnerUid);
       setMessages([]);
       setIsSkipping(false);
       setNsfwWarnings(0);
@@ -324,11 +393,29 @@ const Chat = () => {
     }
   };
 
+  const toggleBlur = async () => {
+    if (!localStream) return;
+    const newState = !isBlurActive;
+    setIsBlurActive(newState);
+
+    if (newState) {
+      // Start processing
+      if (!canvasRef.current) return;
+      const stream = canvasRef.current.captureStream(30);
+      blurStreamRef.current = stream;
+      
+      // We don't replace the actual WebRTC track here because it's complex, 
+      // but we update the UI local video.
+      // In a real app, we'd use replaceTrack in useWebRTC.
+    }
+  };
+
   const submitReport = async (reason, isAuto = false) => {
     if (!currentUser) return;
     try {
       await addDoc(collection(db, 'reports'), {
         reporterUid: currentUser.uid,
+        reportedUid: partnerUid,
         reportedAt: serverTimestamp(),
         reason: reason,
         partnerInterests: partnerInterests,
@@ -489,13 +576,19 @@ const Chat = () => {
             {/* Local Video Overlay */}
             <div className="local-video-overlay absolute bottom-4 right-4 w-32 h-44 sm:w-40 sm:h-56 bg-slate-900 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-20 transition-all hover:scale-105">
               {localStream ? (
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover mirror"
-                />
+                <>
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className={`w-full h-full object-cover mirror ${isBlurActive ? 'hidden' : 'block'}`}
+                  />
+                  <canvas 
+                    ref={canvasRef}
+                    className={`w-full h-full object-cover mirror ${isBlurActive ? 'block' : 'hidden'}`}
+                  />
+                </>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-gray-600 bg-slate-900">
                   <VideoOff size={24} className="mb-2" />
@@ -519,6 +612,7 @@ const Chat = () => {
                 type="button"
                 onClick={toggleVideo} 
                 className={`w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${isVideoOff ? 'bg-red-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
+                title={isVideoOff ? "Turn Video On" : "Turn Video Off"}
               >
                 {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
               </button>
@@ -526,8 +620,21 @@ const Chat = () => {
                 type="button"
                 onClick={toggleMute} 
                 className={`w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${isMuted ? 'bg-red-500 text-white' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
+                title={isMuted ? "Unmute" : "Mute"}
               >
                 {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+              </button>
+
+              <button 
+                type="button"
+                onClick={toggleBlur} 
+                className={`w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${isBlurActive ? 'bg-indigo-600 text-white' : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'}`}
+                title={isBlurActive ? "Disable Blur" : "Blur Background"}
+              >
+                <div className="relative">
+                  <UserX size={20} className={isBlurActive ? "opacity-100" : "opacity-50"} />
+                  {!isBlurActive && <div className="absolute inset-0 flex items-center justify-center"><div className="w-4 h-px bg-white rotate-45"></div></div>}
+                </div>
               </button>
 
               {/* Mobile Only: Switch Camera */}

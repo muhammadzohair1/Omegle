@@ -88,11 +88,13 @@ setInterval(() => {
           socket1.emit('match_found', { 
             roomId, 
             partnerInterests: user2.interests,
+            partnerUid: user2.uid,
             isInitiator: false 
           });
           socket2.emit('match_found', { 
             roomId, 
             partnerInterests: user1.interests,
+            partnerUid: user1.uid,
             isInitiator: true 
           });
         }

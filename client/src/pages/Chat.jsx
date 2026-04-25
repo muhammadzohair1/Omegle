@@ -35,6 +35,7 @@ const Chat = () => {
     initializeMedia,
     startCall,
     endCall,
+    connectionState,
     error: webrtcError,
     toggleCamera,
     toggleFlashlight,

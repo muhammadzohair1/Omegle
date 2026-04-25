@@ -57,6 +57,7 @@ const Chat = () => {
   const [isRemoteBlurred, setIsRemoteBlurred] = useState(false);
   const [showNsfwPopup, setShowNsfwPopup] = useState(false);
   
+  const nsfwConsecutiveCountRef = useRef(0);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const localVideoRef = useRef(null);
@@ -115,28 +116,38 @@ const Chat = () => {
             const predictions = await nsfwModel.classify(remoteVideoRef.current);
             console.log('AI Predictions:', predictions.map(p => `${p.className}: ${Math.round(p.probability * 100)}%`).join(', '));
             
+            // Only trigger for Porn or Hentai with 90%+ certainty
             const highestNsfw = predictions.find(p => 
-              ['Porn', 'Hentai', 'Sexy'].includes(p.className) && p.probability > 0.35
+              ['Porn', 'Hentai'].includes(p.className) && p.probability > 0.90
             );
 
             if (highestNsfw) {
-              console.log('NSFW ALERT:', highestNsfw);
-              setIsRemoteBlurred(true);
-              setShowNsfwPopup(true);
-              setNsfwWarnings(prev => {
-                const newCount = prev + 1;
-                addSystemMessage(`⚠️ NSFW DETECTED: ${highestNsfw.className} (${Math.round(highestNsfw.probability * 100)}% certainty). Warning ${newCount}/3.`);
-                if (newCount >= 3) {
-                  addSystemMessage('Auto-reporting for sensitive content...');
-                  setTimeout(() => {
-                    submitReport('inappropriate', true);
-                  }, 1500);
-                }
-                return newCount;
-              });
+              nsfwConsecutiveCountRef.current += 1;
+              console.log(`NSFW Consecutive Count: ${nsfwConsecutiveCountRef.current}/2`);
               
-              // Hide popup after 3 seconds but keep blur
-              setTimeout(() => setShowNsfwPopup(false), 3000);
+              // Only blur if detected 2 times in a row
+              if (nsfwConsecutiveCountRef.current >= 2) {
+                console.log('NSFW THRESHOLD REACHED:', highestNsfw);
+                setIsRemoteBlurred(true);
+                setShowNsfwPopup(true);
+                setNsfwWarnings(prev => {
+                  const newCount = prev + 1;
+                  addSystemMessage(`⚠️ WARNING: Inappropriate content detected (${newCount}/3).`);
+                  if (newCount >= 3) {
+                    addSystemMessage('Safety Shield: Auto-reporting violation...');
+                    setTimeout(() => {
+                      submitReport('inappropriate', true);
+                    }, 1500);
+                  }
+                  return newCount;
+                });
+                
+                // Hide popup quickly (2 seconds)
+                setTimeout(() => setShowNsfwPopup(false), 2000);
+              }
+            } else {
+              // Reset consecutive count if a clean frame is detected
+              nsfwConsecutiveCountRef.current = 0;
             }
           } catch (e) {
             console.log('NSFW Classification error:', e);
@@ -204,6 +215,7 @@ const Chat = () => {
       setNsfwWarnings(0);
       setIsRemoteBlurred(false);
       setShowNsfwPopup(false);
+      nsfwConsecutiveCountRef.current = 0;
       addSystemMessage("You're connected with a random stranger!");
       if (data.partnerInterests) {
         addSystemMessage(`They also selected: ${data.partnerInterests.category}`);
@@ -442,17 +454,14 @@ const Chat = () => {
                   <AnimatePresence>
                     {showNsfwPopup && (
                       <motion.div 
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 50 }}
-                        className="absolute top-10 left-1/2 -translate-x-1/2 z-50 w-[90%]"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="absolute top-6 right-6 z-50"
                       >
-                        <div className="bg-red-600 text-white p-4 rounded-2xl shadow-[0_0_30px_rgba(220,38,38,0.5)] flex items-center gap-3 border border-red-400/30">
-                          <AlertCircle size={24} className="flex-shrink-0" />
-                          <div>
-                            <p className="font-bold text-sm">NSFW CONTENT DETECTED</p>
-                            <p className="text-[10px] opacity-90">Stranger's video has been blurred for your safety.</p>
-                          </div>
+                        <div className="bg-red-600/90 backdrop-blur-md text-white px-4 py-2 rounded-xl shadow-xl flex items-center gap-2 border border-red-400/30">
+                          <AlertCircle size={18} className="animate-pulse" />
+                          <span className="font-bold text-xs">Sensitive Content Detected</span>
                         </div>
                       </motion.div>
                     )}

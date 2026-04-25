@@ -80,16 +80,24 @@ const Chat = () => {
     // Load NSFW model
     const loadModel = async () => {
       try {
-        console.log('Loading NSFW model from CDN...');
-        // Using the default CDN (Unpkg) because local files were corrupted
-        const model = await nsfwjs.load();
+        console.log('Loading NSFW model...');
+        // Try local path first with absolute URL to prevent 404 on sub-routes
+        const localPath = `${window.location.origin}/model/`;
+        let model;
+        try {
+          model = await nsfwjs.load(localPath);
+          console.log('NSFW model loaded from local path.');
+        } catch (localErr) {
+          console.warn('Local NSFW model failed (possibly corrupted files), falling back to CDN...', localErr);
+          model = await nsfwjs.load(); // Default CDN fallback
+          console.log('NSFW model loaded from CDN.');
+        }
+        
         setNsfwModel(model);
-        console.log('NSFW model loaded successfully from CDN.');
         addSystemMessage('🛡️ Safety Shield Active');
       } catch (err) {
         console.error('Failed to load NSFW model:', err);
         addSystemMessage('❌ Safety Shield Failed to Load. Please refresh.');
-        alert('NSFW Model failed to load. Check internet connection.');
       }
     };
     loadModel();

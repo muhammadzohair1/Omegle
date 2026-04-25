@@ -7,7 +7,14 @@
     <meta name="theme-color" content="#0f172a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>SmartChat | Random Video Chat</title>
+    <title>SmartChat - Random Video Chat</title>
+    <script>
+      if (window.global === undefined) { window.global = window; }
+    </script>
+    <script type="module">
+      import { Buffer } from "buffer";
+      window.Buffer = Buffer;
+    </script>
   </head>
   <body>
     <div id="root"></div>

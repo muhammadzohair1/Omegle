@@ -61,7 +61,7 @@ const Chat = () => {
   const [showNsfwPopup, setShowNsfwPopup] = useState(false);
   const [partnerUid, setPartnerUid] = useState(null);
   const [isBlurActive, setIsBlurActive] = useState(false);
-  const [isModelLoading, setIsModelLoading] = useState(false);
+  const [isModelLoading, setIsModelLoading] = useState(true);
 
   const nsfwConsecutiveCountRef = useRef(0);
   const messagesEndRef = useRef(null);
@@ -79,6 +79,7 @@ const Chat = () => {
 
     // Load NSFW model
     const loadModel = async () => {
+      setIsModelLoading(true);
       try {
         console.log('Loading NSFW model...');
         // Try local path first with absolute URL to prevent 404 on sub-routes
@@ -97,7 +98,9 @@ const Chat = () => {
         addSystemMessage('🛡️ Safety Shield Active');
       } catch (err) {
         console.error('Failed to load NSFW model:', err);
-        addSystemMessage('❌ Safety Shield Failed to Load. Please refresh.');
+        addSystemMessage('❌ Safety Shield Failed to Load. Basic chat active.');
+      } finally {
+        setIsModelLoading(false);
       }
     };
     loadModel();
@@ -105,42 +108,42 @@ const Chat = () => {
 
   // Initialize Selfie Segmentation
   useEffect(() => {
-    const segmentation = new SelfieSegmentation.SelfieSegmentation({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
-    });
+    try {
+      const segmentation = new SelfieSegmentation.SelfieSegmentation({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
+      });
 
-    segmentation.setOptions({
-      modelSelection: 1,
-    });
+      segmentation.setOptions({
+        modelSelection: 1,
+        selfieMode: true,
+      });
 
-    segmentation.onResults((results) => {
-      if (!canvasRef.current) return;
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
+      segmentation.onResults((results) => {
+        if (!canvasRef.current || !localVideoRef.current) return;
+        const canvasCtx = canvasRef.current.getContext('2d');
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        canvasCtx.drawImage(results.segmentationMask, 0, 0, canvasRef.current.width, canvasRef.current.height);
 
-      ctx.save();
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Draw the original image but only where the mask is present (person)
+        canvasCtx.globalCompositeOperation = 'source-in';
+        canvasCtx.drawImage(results.image, 0, 0, canvasRef.current.width, canvasRef.current.height);
 
-      // Draw segmentation mask
-      ctx.drawImage(results.segmentationMask, 0, 0, canvas.width, canvas.height);
+        // Draw the blurred background
+        canvasCtx.globalCompositeOperation = 'destination-over';
+        canvasCtx.filter = 'blur(15px)';
+        canvasCtx.drawImage(results.image, 0, 0, canvasRef.current.width, canvasRef.current.height);
+        canvasCtx.restore();
+      });
 
-      // Draw the original image with "destination-atop" to only keep the person
-      ctx.globalCompositeOperation = 'source-in';
-      ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-
-      // Draw background (blurred)
-      ctx.globalCompositeOperation = 'destination-over';
-      ctx.filter = 'blur(15px)';
-      ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-
-      ctx.restore();
-    });
-
-    selfieSegmentationRef.current = segmentation;
+      selfieSegmentationRef.current = segmentation;
+    } catch (err) {
+      console.error('SelfieSegmentation init failed:', err);
+    }
 
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-      segmentation.close();
+      if (selfieSegmentationRef.current) selfieSegmentationRef.current.close();
     };
   }, []);
 

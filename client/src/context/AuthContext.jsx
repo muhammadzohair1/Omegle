@@ -19,11 +19,27 @@ export const AuthProvider = ({ children }) => {
         const banRef = doc(db, "banned", user.uid);
         const banSnap = await getDoc(banRef);
         if (banSnap.exists()) {
-          alert("Your account has been banned for violating safety policies.");
-          auth.signOut();
-          setCurrentUser(null);
-          setLoading(false);
-          return;
+          const banData = banSnap.data();
+          const expiresAt = banData.expiresAt?.toDate();
+          
+          if (expiresAt && expiresAt > new Date()) {
+            const timeRemaining = Math.ceil((expiresAt - new Date()) / (1000 * 60 * 60));
+            alert(`Your account is temporarily banned for safety violations. Time remaining: ~${timeRemaining} hours.`);
+            auth.signOut();
+            setCurrentUser(null);
+            setLoading(false);
+            return;
+          } else if (expiresAt && expiresAt <= new Date()) {
+            // Ban expired, allow entry (optionally delete the ban record)
+            console.log("Ban expired, allowing access.");
+          } else {
+            // Permanent ban (no expiresAt)
+            alert("Your account has been permanently banned for violating safety policies.");
+            auth.signOut();
+            setCurrentUser(null);
+            setLoading(false);
+            return;
+          }
         }
 
         setCurrentUser(user);

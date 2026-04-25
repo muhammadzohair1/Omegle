@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc, setDoc } from 'firebase/firestore';
 import { useWebRTC } from '../hooks/useWebRTC';
 import * as tf from '@tensorflow/tfjs';
 import * as nsfwjs from 'nsfwjs';
@@ -167,6 +167,37 @@ const Chat = () => {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Privacy & Anti-Leak Shield
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setIsBlurActive(true);
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p')) {
+        alert('Privacy Protection: Screenshots and printing are disabled on this platform.');
+        // Briefly show black overlay
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.inset = '0';
+        overlay.style.background = 'black';
+        overlay.style.zIndex = '9999';
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.remove(), 2000);
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
@@ -468,8 +499,9 @@ const Chat = () => {
   };
 
   const submitReport = async (reason, isAuto = false) => {
-    if (!currentUser) return;
+    if (!currentUser || !partnerUid) return;
     try {
+      // 1. Log the individual report
       await addDoc(collection(db, 'reports'), {
         reporterUid: currentUser.uid,
         reportedUid: partnerUid,
@@ -479,7 +511,38 @@ const Chat = () => {
         chatStateAtReport: chatState,
         autoReport: isAuto
       });
-      addSystemMessage(isAuto ? 'User automatically reported.' : 'Report submitted.');
+
+      // 2. Increment report count and check for auto-ban
+      const userStatsRef = doc(db, 'userStats', partnerUid);
+      const reportSnap = await getDoc(userStatsRef);
+      
+      let count = 1;
+      if (reportSnap.exists()) {
+        count = (reportSnap.data().reportCount || 0) + 1;
+      }
+
+      await setDoc(userStatsRef, { 
+        reportCount: count,
+        lastReportedAt: serverTimestamp() 
+      }, { merge: true });
+
+      if (count >= 3) {
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + 24);
+
+        await setDoc(doc(db, 'banned', partnerUid), {
+          bannedAt: serverTimestamp(),
+          expiresAt: expiresAt,
+          reason: 'Automated Ban: Received 3 or more safety reports.',
+          reportCount: count
+        });
+        
+        // Reset count after ban
+        await setDoc(userStatsRef, { reportCount: 0 }, { merge: true });
+        addSystemMessage('🛡️ User automatically banned for 24 hours.');
+      } else {
+        addSystemMessage(isAuto ? 'User automatically reported.' : 'Report submitted.');
+      }
     } catch (error) {
       console.error('Error submitting report:', error);
     }
@@ -515,7 +578,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="chat-container h-[100dvh]">
+    <div className="chat-container h-[100dvh] select-none touch-none">
       <div className="chat-layout">
         {/* Left Sidebar: Info & Interests */}
         <div className="chat-sidebar glass-panel">

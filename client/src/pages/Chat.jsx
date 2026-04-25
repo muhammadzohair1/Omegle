@@ -80,6 +80,13 @@ const Chat = () => {
     // Load NSFW model
     const loadModel = async () => {
       setIsModelLoading(true);
+      
+      // Emergency timeout to ensure UI renders even on slow connections
+      const forceShowUI = setTimeout(() => {
+        setIsModelLoading(false);
+        console.warn('Model loading timeout: Forcing UI display');
+      }, 5000);
+
       try {
         console.log('Loading NSFW model...');
         // Try local path first with absolute URL to prevent 404 on sub-routes
@@ -100,6 +107,7 @@ const Chat = () => {
         console.error('Failed to load NSFW model:', err);
         addSystemMessage('❌ Safety Shield Failed to Load. Basic chat active.');
       } finally {
+        clearTimeout(forceShowUI);
         setIsModelLoading(false);
       }
     };
@@ -484,7 +492,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="chat-container">
+    <div className="chat-container h-[100dvh]">
       <div className="chat-layout">
         {/* Left Sidebar: Info & Interests */}
         <div className="chat-sidebar glass-panel">

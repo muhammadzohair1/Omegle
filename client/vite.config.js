@@ -10,6 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       workbox: {
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB
+        globIgnores: ['model/**'],
       },
       includeAssets: ['favicon.svg', 'pwa-icon-512.png'],
       manifest: {

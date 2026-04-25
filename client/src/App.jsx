@@ -49,6 +49,7 @@ function App() {
             <Route path="/admin" element={<Admin />} />
             
             <Route path="/" element={<Navigate to="/chat" />} />
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>
       </div>

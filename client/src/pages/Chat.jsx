@@ -12,7 +12,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useWebRTC } from '../hooks/useWebRTC';
 import * as tf from '@tensorflow/tfjs';
 import * as nsfwjs from 'nsfwjs';
-import { SelfieSegmentation } from '@mediapipe/selfie_segmentation';
+import * as SelfieSegmentation from '@mediapipe/selfie_segmentation';
 import './Chat.css';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
@@ -97,7 +97,7 @@ const Chat = () => {
 
   // Initialize Selfie Segmentation
   useEffect(() => {
-    const segmentation = new SelfieSegmentation({
+    const segmentation = new SelfieSegmentation.SelfieSegmentation({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
     });
 

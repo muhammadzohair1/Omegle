@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import { 
@@ -25,6 +26,7 @@ const REPORT_REASONS = [
 
 const Chat = () => {
   const { currentUser, userInterests } = useAuth();
+  const navigate = useNavigate();
   const [socket, setSocket] = useState(null);
   
   const { 
@@ -249,7 +251,20 @@ const Chat = () => {
   useEffect(() => {
     const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
-    return () => newSocket.disconnect();
+    
+    // Auto-redirect if refresh happens (state is lost)
+    // We wait a moment for the socket to initialize
+    const timeout = setTimeout(() => {
+      if (chatState === 'idle' && !newSocket.connected) {
+        console.log('Session lost on refresh, redirecting to home...');
+        navigate('/');
+      }
+    }, 2000);
+
+    return () => {
+      newSocket.disconnect();
+      clearTimeout(timeout);
+    };
   }, []);
 
   useEffect(() => {

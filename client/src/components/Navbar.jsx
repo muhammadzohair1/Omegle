@@ -22,32 +22,34 @@ const Navbar = () => {
   if (!currentUser) return null;
 
   return (
-    <nav className="navbar glass-panel">
-      <div className="navbar-container">
-        <Link to="/chat" className="navbar-logo">
-          <MessageSquare className="logo-icon" />
-          <span>SmartChat</span>
-        </Link>
-        
-        <div className="navbar-links">
-          <div className="user-profile">
-            {currentUser.photoURL ? (
-              <img src={currentUser.photoURL} alt="Profile" className="profile-pic" />
-            ) : (
-              <div className="profile-placeholder"><User size={20} /></div>
-            )}
-            <span className="user-name">{currentUser.displayName || 'User'}</span>
-          </div>
-
-          <Link to="/interests" className="nav-btn btn-secondary" title="Edit Interests">
-            <Settings size={18} />
-            <span className="nav-text">Interests</span>
+    <nav className="navbar">
+      <div className="navbar-glass">
+        <div className="navbar-container">
+          <Link to="/chat" className="navbar-logo">
+            <MessageSquare className="logo-icon" />
+            <span>SmartChat</span>
           </Link>
           
-          <button onClick={handleLogout} className="nav-btn btn-danger" title="Logout">
-            <LogOut size={18} />
-            <span className="nav-text">Logout</span>
-          </button>
+          <div className="navbar-links">
+            <div className="user-profile-badge">
+              {currentUser.photoURL ? (
+                <img src={currentUser.photoURL} alt="Profile" className="profile-pic-mini" />
+              ) : (
+                <div className="profile-placeholder"><User size={16} /></div>
+              )}
+              <span className="badge-name">{currentUser.displayName || 'User'}</span>
+            </div>
+
+            <Link to="/interests" className="nav-action-btn btn-interests" title="Edit Interests">
+              <Settings size={16} />
+              <span className="nav-text">Interests</span>
+            </Link>
+            
+            <button onClick={handleLogout} className="nav-action-btn btn-logout" title="Logout">
+              <LogOut size={16} />
+              <span className="nav-text">Logout</span>
+            </button>
+          </div>
         </div>
       </div>
     </nav>

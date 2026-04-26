@@ -1,16 +1,18 @@
 .login-container {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 80px); /* fallback height without navbar overlap issue */
+  background: radial-gradient(circle at center, #121214 0%, #0A0A0C 100%);
   padding: 20px;
 }
 
 .login-card {
-  width: 100%;
   max-width: 440px;
+  width: 100%;
   padding: 48px;
   text-align: center;
+  animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .brand {
@@ -18,72 +20,82 @@
 }
 
 .brand-icon {
-  color: var(--accent-primary);
-  margin-bottom: 16px;
-  filter: drop-shadow(0 0 16px rgba(99, 102, 241, 0.4));
+  color: var(--accent-blue);
+  margin-bottom: 24px;
+  filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.4));
 }
 
 .brand h1 {
   font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
   margin-bottom: 8px;
-  background: linear-gradient(to right, #fff, #a5b4fc);
+  background: linear-gradient(to bottom, #FFF, #A1A1AA);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .brand p {
   color: var(--text-secondary);
-  font-size: 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .google-btn {
+  width: 100%;
+  height: 56px;
+  background: white;
+  color: black;
+  border: none;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  width: 100%;
-  background: white;
-  color: #1f2937;
-  border: none;
-  padding: 14px;
-  border-radius: 12px;
-  font-size: 1.05rem;
-  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 32px;
 }
 
 .google-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
+  transform: scale(1.02);
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+}
+
+.google-btn:active {
+  transform: scale(0.98);
 }
 
 .google-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 
 .features-grid {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  text-align: left;
+  margin-top: 24px;
 }
 
 .feature-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  font-size: 0.65rem;
+  font-weight: 700;
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 .feature-dot {
-  width: 8px;
-  height: 8px;
-  background: var(--accent-primary);
+  width: 4px;
+  height: 4px;
+  background: var(--accent-blue);
   border-radius: 50%;
-  box-shadow: 0 0 8px var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-blue);
 }

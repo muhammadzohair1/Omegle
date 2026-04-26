@@ -583,17 +583,24 @@ const Chat = () => {
         {/* Left Sidebar: Info & Interests */}
         <div className="chat-sidebar glass-panel">
           <div className="sidebar-section">
-            <h3 className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-indigo-500"></div> Your Profile</h3>
-            <div className="user-profile-mini p-3 bg-white/5 rounded-xl border border-white/10 mb-4">
-              <p className="text-sm font-semibold">{currentUser?.displayName}</p>
-              <p className="text-[10px] opacity-50 truncate">{currentUser?.email}</p>
+            <h3 className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,255,255,0.5)]"></div> 
+              Your Profile
+            </h3>
+            <div className="user-profile-mini">
+              <p className="text-sm font-black">{currentUser?.displayName}</p>
+              <p className="text-[10px] text-gray-500 truncate">{currentUser?.email}</p>
             </div>
 
-            <h3>Your Interests</h3>
-            <div className="interest-tag-display">
-              <span className="cat-badge">{userInterests?.category}</span>
+            <h3 className="mt-8">Your Interests</h3>
+            <div className="flex flex-wrap gap-2">
+              <span className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-full text-[10px] font-black uppercase">
+                {userInterests?.category}
+              </span>
               {userInterests?.subOptions?.map(sub => (
-                <span key={sub} className="sub-badge">{sub}</span>
+                <span key={sub} className="px-3 py-1 bg-white/5 border border-white/10 text-gray-400 rounded-full text-[10px]">
+                  {sub}
+                </span>
               ))}
             </div>
             {partnerMuted && (
@@ -604,31 +611,31 @@ const Chat = () => {
           </div>
 
           <div className="sidebar-section">
-            <h3>Stranger Info</h3>
+            <h3 className="mt-8">Stranger Status</h3>
             {chatState === 'connected' ? (
-              <div className="stranger-info connected animate-fade-in">
-                <div className="flex items-center gap-2">
-                  <div className="status-dot connected"></div>
-                  <span className="font-bold text-green-400">Connected</span>
+              <div className="p-4 bg-cyan-500/5 border border-cyan-500/10 rounded-2xl animate-pulse-glow">
+                <div className="flex items-center gap-2 text-cyan-400">
+                  <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_#00FFFF]"></div>
+                  <span className="font-black text-xs uppercase">Encrypted Match</span>
                 </div>
                 {partnerInterests && (
-                  <div className="partner-interests-box mt-3 p-2 bg-green-500/10 border border-green-500/20 rounded-lg">
-                    <p className="text-xs">Also likes: <span className="text-green-300 font-bold">{partnerInterests.category}</span></p>
+                  <div className="mt-2 text-[10px] text-gray-500">
+                    Category: <span className="text-white">{partnerInterests.category}</span>
                   </div>
                 )}
               </div>
             ) : chatState === 'looking' ? (
-              <div className="stranger-info looking">
-                <div className="flex items-center gap-2">
-                  <Loader className="spinner text-blue-400" size={16} />
-                  <span>Searching...</span>
+              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl animate-pulse">
+                <div className="flex items-center gap-2 text-gray-400">
+                  <Loader className="animate-spin" size={14} />
+                  <span className="text-xs font-bold uppercase">Scanning...</span>
                 </div>
               </div>
             ) : (
-              <div className="stranger-info idle">
-                <div className="flex items-center gap-2 text-gray-500">
-                  <UserX size={16} />
-                  <span>Not Connected</span>
+              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl opacity-30">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <UserX size={14} />
+                  <span className="text-xs font-bold uppercase">Standby</span>
                 </div>
               </div>
             )}
@@ -649,9 +656,9 @@ const Chat = () => {
                   style={{ filter: isRemoteBlurred ? 'blur(20px)' : 'none' }}
                 />
                 {!remoteStream && chatState === 'connected' && (
-                  <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl flex flex-col items-center justify-center text-white z-20">
-                    <Loader className="animate-spin mb-4 text-indigo-500" size={32} />
-                    <p className="text-sm font-black tracking-widest uppercase">Syncing Stream...</p>
+                  <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-2xl flex flex-col items-center justify-center text-white z-20">
+                    <Loader className="animate-spin mb-4 text-cyan-400" size={32} />
+                    <p className="text-xs font-black tracking-[0.2em] uppercase">Syncing Stream...</p>
                   </div>
                 )}
                 <AnimatePresence>
@@ -765,16 +772,16 @@ const Chat = () => {
                     className="h-12 px-8 bg-white text-black font-black rounded-full hover:bg-red-500 hover:text-white transition-all flex items-center gap-2"
                   >
                     <RefreshCw size={18} className={isSkipping ? 'animate-spin' : ''} />
-                    NEXT
+                    SKIP
                   </button>
                 ) : (
                   <button
                     onClick={startLooking}
                     disabled={chatState === 'looking'}
-                    className="h-12 px-8 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-full shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                    className="h-12 px-8 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-full shadow-[0_0_20px_rgba(0,255,255,0.4)] transition-all flex items-center gap-2 disabled:opacity-50"
                   >
                     {chatState === 'looking' ? <Loader className="animate-spin" size={18} /> : <Video size={18} />}
-                    {chatState === 'looking' ? 'SEARCHING' : 'START CHAT'}
+                    {chatState === 'looking' ? 'LINKING...' : 'START'}
                   </button>
                 )}
               </div>
@@ -784,11 +791,10 @@ const Chat = () => {
 
         {/* Right Panel: Chat Box */}
         <div className="chat-panel glass-panel overflow-hidden flex flex-col">
-          <div className="chat-panel-header p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
-            <div className="flex items-center gap-2 font-bold text-sm">
-              <MessageCircle size={18} className="text-indigo-400" />
-              Chatbox
-            </div>
+          <div className="p-4 border-b border-white/5 flex items-center gap-2">
+            <MessageSquare size={18} className="text-cyan-400" />
+            <h3 className="font-black text-xs uppercase tracking-[0.2em]">Live Feed</h3>
+          </div>
             {chatState === 'connected' && (
               <button
                 onClick={() => setShowReportModal(true)}

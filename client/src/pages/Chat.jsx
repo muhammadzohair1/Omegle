@@ -92,14 +92,15 @@ const Chat = () => {
         // Try local path first with absolute URL to prevent 404 on sub-routes
         const localPath = `${window.location.origin}/model/`;
         let model;
-        try {
-          model = await nsfwjs.load(localPath);
-          console.log('NSFW model loaded from local path.');
-        } catch (localErr) {
-          console.warn('Local NSFW model failed (possibly corrupted files), falling back to CDN...', localErr);
+        // Temporarily force CDN version due to local file corruption
+        // try {
+        //   model = await nsfwjs.load(localPath);
+        //   console.log('NSFW model loaded from local path.');
+        // } catch (localErr) {
+        //   console.warn('Local NSFW model failed (possibly corrupted files), falling back to CDN...', localErr);
           model = await nsfwjs.load(); // Default CDN fallback
           console.log('NSFW model loaded from CDN.');
-        }
+        // }
         
         setNsfwModel(model);
         addSystemMessage('🛡️ Safety Shield Active');
@@ -335,23 +336,46 @@ const Chat = () => {
   }, [messages, partnerTyping]);
 
   useEffect(() => {
-    const newSocket = io(SOCKET_URL);
-    setSocket(newSocket);
+    let newSocket;
+    try {
+      newSocket = io(SOCKET_URL, {
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+      });
 
-    // Auto-redirect if refresh happens (state is lost)
-    // We wait a moment for the socket to initialize
+      newSocket.on('connect_error', (error) => {
+        console.warn('Socket connect_error:', error);
+        addSystemMessage('Reconnecting to server...');
+      });
+
+      newSocket.on('disconnect', (reason) => {
+        console.warn('Socket disconnected:', reason);
+        addSystemMessage('Connection lost. Reconnecting...');
+        if (reason === 'io server disconnect') {
+          newSocket.connect();
+        }
+      });
+
+      setSocket(newSocket);
+    } catch (error) {
+      console.error('Socket initialization error:', error);
+    }
+
+    // Auto-redirect disabled for debugging
     const timeout = setTimeout(() => {
-      if (chatState === 'idle' && !newSocket.connected) {
-        console.log('Session lost on refresh, redirecting to home...');
-        navigate('/');
+      if (chatState === 'idle' && newSocket && !newSocket.connected) {
+        console.warn("REDIRECTING TO HOME. Reason: [Session lost on refresh or socket failed to connect - DISABLED FOR DEBUGGING]");
+        // navigate('/');
       }
     }, 2000);
 
     return () => {
-      newSocket.disconnect();
+      if (newSocket) newSocket.disconnect();
       clearTimeout(timeout);
     };
-  }, []);
+  }, [chatState]);
 
   useEffect(() => {
     if (!socket) return;

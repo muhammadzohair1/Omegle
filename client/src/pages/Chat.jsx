@@ -791,14 +791,16 @@ const Chat = () => {
 
         {/* Right Panel: Chat Box */}
         <div className="chat-panel glass-panel overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-white/5 flex items-center gap-2">
-            <MessageSquare size={18} className="text-cyan-400" />
-            <h3 className="font-black text-xs uppercase tracking-[0.2em]">Live Feed</h3>
-          </div>
+          <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/2">
+            <div className="flex items-center gap-2">
+              <MessageSquare size={18} className="text-cyan-400" />
+              <h3 className="font-black text-xs uppercase tracking-[0.2em]">Live Feed</h3>
+            </div>
             {chatState === 'connected' && (
               <button
                 onClick={() => setShowReportModal(true)}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400"
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-500"
+                title="Report User"
               >
                 <Flag size={14} />
               </button>

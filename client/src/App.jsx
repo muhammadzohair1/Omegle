@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import InterestSelector from './pages/InterestSelector';
+import Landing from './pages/Landing';
 import Chat from './pages/Chat';
 import Admin from './pages/Admin';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -33,6 +34,7 @@ function App() {
         <Navbar />
         <div className="main-content">
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             
             <Route path="/interests" element={
@@ -51,7 +53,7 @@ function App() {
 
             <Route path="/admin" element={<Admin />} />
             
-            <Route path="/" element={<Navigate to="/chat" />} />
+
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>

@@ -627,12 +627,12 @@ const Chat = () => {
       {/* Background Ambience */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900/40 via-obsidian to-obsidian pointer-events-none"></div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 h-full max-w-[1600px] mx-auto relative z-10">
+      <div className="flex flex-col md:grid md:grid-cols-12 gap-2 md:gap-4 h-full max-w-[1600px] mx-auto relative z-10 pb-1 md:pb-0">
         
-        {/* Left Sidebar: Info & Bento Modules */}
+        {/* Left Sidebar: Info & Bento Modules (Hidden on mobile) */}
         <motion.div 
           initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="md:col-span-3 flex flex-col gap-4 h-full"
+          className="hidden md:flex md:col-span-3 flex-col gap-4 h-full"
         >
           {/* Profile Module */}
           <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-glass-inset flex flex-col gap-4 h-1/3">
@@ -706,7 +706,7 @@ const Chat = () => {
         {/* Center: Video Main Area (Bento Hero) */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.1 }}
-          className={`md:col-span-6 bg-obsidian rounded-2xl overflow-hidden border ${chatState === 'connected' ? 'border-cyan-neon/30 shadow-neon-cyan' : 'border-white/10 shadow-glass-inset'} relative group transition-all duration-500`}
+          className={`md:col-span-6 h-[45%] md:h-full bg-obsidian rounded-2xl overflow-hidden border ${chatState === 'connected' ? 'border-cyan-neon/30 shadow-neon-cyan' : 'border-white/10 shadow-glass-inset'} relative group transition-all duration-500`}
         >
           {chatState === 'connected' && (
              <div className="absolute inset-0 p-[1px] bg-gradient-to-r from-cyan-neon via-purple-plasma to-cyan-neon animate-running-light rounded-2xl pointer-events-none z-30 opacity-50"></div>
@@ -752,7 +752,7 @@ const Chat = () => {
               </motion.div>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 bg-obsidian">
-                <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-glass-inset">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 md:mb-6 shadow-glass-inset">
                   <VideoOff size={32} className="opacity-30" />
                 </div>
                 <p className="text-[10px] font-bold tracking-[0.3em] uppercase opacity-40">Awaiting Signal</p>
@@ -761,7 +761,7 @@ const Chat = () => {
           </div>
 
           {/* Local Video Overlay (Bento Sub-module) */}
-          <div className="absolute bottom-6 right-6 w-32 h-48 sm:w-44 sm:h-64 bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-20 group/local">
+          <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 w-24 h-32 md:w-32 md:h-48 sm:w-44 sm:h-64 bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-20 group/local">
             <div className="absolute inset-0 border border-white/10 rounded-2xl z-30 pointer-events-none"></div>
             {localStream ? (
               <>
@@ -780,11 +780,11 @@ const Chat = () => {
               </>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-slate-600 bg-obsidian">
-                <VideoOff size={24} className="mb-2 opacity-50" />
+                <VideoOff size={16} className="mb-2 opacity-50 md:w-6 md:h-6" />
                 {webrtcError?.includes('Locked') || webrtcError?.includes('Unavailable') ? (
-                  <span className="text-[9px] text-center px-2 text-red-400 font-mono">Hardware Locked</span>
+                  <span className="text-[8px] md:text-[9px] text-center px-2 text-red-400 font-mono">Hardware Locked</span>
                 ) : (
-                  <span className="text-[9px] font-mono uppercase tracking-wider">No Feed</span>
+                  <span className="text-[8px] md:text-[9px] font-mono uppercase tracking-wider">No Feed</span>
                 )}
               </div>
             )}
@@ -797,29 +797,29 @@ const Chat = () => {
           </div>
 
           {/* Floating Action Controls Dock */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 p-3 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl z-20 transition-transform duration-300 hover:scale-105">
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleVideo} className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isVideoOff ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
-              {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl z-20 transition-transform duration-300 hover:scale-105">
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleVideo} className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${isVideoOff ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
+              {isVideoOff ? <VideoOff size={18} /> : <Video size={18} />}
             </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleMute} className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isMuted ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
-              {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleMute} className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${isMuted ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
+              {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
             </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleBlur} className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isBlurActive ? 'bg-purple-plasma/20 text-purple-plasma border border-purple-plasma/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
-              <UserX size={20} />
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleBlur} className={`hidden md:flex w-12 h-12 rounded-full items-center justify-center transition-colors ${isBlurActive ? 'bg-purple-plasma/20 text-purple-plasma border border-purple-plasma/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
+              <UserX size={18} />
             </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleCamera} className="w-12 h-12 rounded-full md:hidden flex items-center justify-center bg-white/10 text-white border border-white/10 hover:bg-white/20">
-              <SwitchCamera size={20} />
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleCamera} className="w-10 h-10 md:hidden rounded-full flex items-center justify-center bg-white/10 text-white border border-white/10 hover:bg-white/20">
+              <SwitchCamera size={18} />
             </motion.button>
 
             <div className="w-px h-6 bg-white/10 mx-1 hidden sm:block"></div>
 
             {chatState === 'connected' ? (
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleSkip} className="h-12 px-6 bg-red-500 hover:bg-red-400 text-white font-bold rounded-full shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all flex items-center gap-2 text-sm tracking-wide">
-                <RefreshCw size={16} className={isSkipping ? 'animate-spin' : ''} /> SKIP
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleSkip} className="h-10 md:h-12 px-4 md:px-6 bg-red-500 hover:bg-red-400 text-white font-bold rounded-full shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all flex items-center gap-2 text-xs md:text-sm tracking-wide">
+                <RefreshCw size={14} className={isSkipping ? 'animate-spin' : ''} /> SKIP
               </motion.button>
             ) : (
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startLooking} disabled={chatState === 'looking'} className="h-12 px-6 bg-cyan-neon hover:bg-cyan-400 text-obsidian font-bold rounded-full shadow-neon-cyan transition-all flex items-center gap-2 disabled:opacity-50 text-sm tracking-wide">
-                {chatState === 'looking' ? <Loader className="animate-spin" size={16} /> : <Zap size={16} />}
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startLooking} disabled={chatState === 'looking'} className="h-10 md:h-12 px-4 md:px-6 bg-cyan-neon hover:bg-cyan-400 text-obsidian font-bold rounded-full shadow-neon-cyan transition-all flex items-center gap-2 disabled:opacity-50 text-xs md:text-sm tracking-wide">
+                {chatState === 'looking' ? <Loader className="animate-spin" size={14} /> : <Zap size={14} />}
                 {chatState === 'looking' ? 'LINKING' : 'START'}
               </motion.button>
             )}
@@ -829,7 +829,7 @@ const Chat = () => {
         {/* Right Panel: Chat Box (Bento Module) */}
         <motion.div 
           initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.2 }}
-          className="md:col-span-3 bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-glass-inset flex flex-col h-full overflow-hidden relative"
+          className="md:col-span-3 h-[55%] md:h-full bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-glass-inset flex flex-col overflow-hidden relative"
         >
           <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
           

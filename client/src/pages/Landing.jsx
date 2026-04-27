@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquare, Shield, Zap, Users, Globe, Lock } from 'lucide-react';
+import { MessageSquare, Shield, Activity, Users, Globe, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const containerVariants = {
@@ -64,7 +64,7 @@ const Landing = () => {
         <motion.div variants={itemVariants} className="feature-card relative overflow-hidden bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-cyan-neon/50 transition-colors duration-300 group shadow-glass-inset">
           <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
           <div className="feature-icon w-12 h-12 rounded-xl bg-cyan-neon/10 flex items-center justify-center mb-6 border border-cyan-neon/20 group-hover:scale-110 transition-transform duration-300">
-            <Zap size={24} className="text-cyan-neon" />
+            <Activity size={24} className="text-cyan-neon" />
           </div>
           <h3 className="text-xl font-semibold mb-3 text-white tracking-tight">Smart Matching</h3>
           <p className="text-slate-400 leading-relaxed text-sm">Our advanced algorithm connects you with people who share your specific passions and hobbies.</p>

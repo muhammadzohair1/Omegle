@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import {
   Send, Loader, UserX, AlertCircle, RefreshCw, Flag, X, MessageSquare,
-  Video, VideoOff, Mic, MicOff, MessageCircle, SwitchCamera, Flashlight, FlashlightOff, Zap
+  Video, VideoOff, Mic, MicOff, MessageCircle, SwitchCamera, Flashlight, FlashlightOff, Activity
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
@@ -545,6 +545,13 @@ const Chat = () => {
 
   const submitReport = async (reason, isAuto = false) => {
     if (!currentUser || !partnerUid) return;
+    
+    if (!navigator.onLine) {
+      addSystemMessage('⚠️ Cannot submit report while offline.');
+      handleSkip();
+      return;
+    }
+
     try {
       // 1. Log the individual report
       await addDoc(collection(db, 'reports'), {
@@ -819,7 +826,7 @@ const Chat = () => {
               </motion.button>
             ) : (
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startLooking} disabled={chatState === 'looking'} className="h-10 md:h-12 px-4 md:px-6 bg-cyan-neon hover:bg-cyan-400 text-obsidian font-bold rounded-full shadow-neon-cyan transition-all flex items-center gap-2 disabled:opacity-50 text-xs md:text-sm tracking-wide">
-                {chatState === 'looking' ? <Loader className="animate-spin" size={14} /> : <Zap size={14} />}
+                {chatState === 'looking' ? <Loader className="animate-spin" size={14} /> : <Activity size={14} />}
                 {chatState === 'looking' ? 'LINKING' : 'START'}
               </motion.button>
             )}

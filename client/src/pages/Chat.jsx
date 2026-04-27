@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import {
   Send, Loader, UserX, AlertCircle, RefreshCw, Flag, X, MessageSquare,
-  Video, VideoOff, Mic, MicOff, MessageCircle, SwitchCamera, Flashlight, FlashlightOff
+  Video, VideoOff, Mic, MicOff, MessageCircle, SwitchCamera, Flashlight, FlashlightOff, Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../firebase';
@@ -480,11 +480,11 @@ const Chat = () => {
   };
 
   const startLooking = () => {
-    if (!socket || !userInterests) return;
+    if (!socket || !userInterests || !currentUser) return;
     setMessages([]);
     setPartnerLeft(false);
     socket.emit('join_queue', {
-      uid: currentUser.uid,
+      uid: currentUser?.uid,
       interests: userInterests,
     });
   };

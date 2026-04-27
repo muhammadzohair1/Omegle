@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, Shield, Zap, Users, Globe, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import './Landing.css';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -23,12 +22,12 @@ const itemVariants = {
 
 const Landing = () => {
   return (
-    <div className="landing-container bg-obsidian text-slate-100 min-h-screen font-inter selection:bg-cyan-neon/30">
+    <div className="landing-container relative bg-obsidian text-slate-100 min-h-screen font-inter selection:bg-cyan-neon/30">
       <div className="landing-bg-glow absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-obsidian to-obsidian pointer-events-none"></div>
       
       {/* Hero Section */}
       <motion.section 
-        className="landing-hero relative z-10 flex flex-col items-center justify-center pt-32 pb-20 text-center px-4"
+        className="landing-hero max-w-7xl mx-auto relative z-10 flex flex-col items-center justify-center pt-32 pb-20 text-center px-4"
         variants={containerVariants}
         initial="hidden"
         animate="visible"

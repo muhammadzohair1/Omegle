@@ -1,82 +1,104 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, Shield, Zap, Users, Globe, Lock } from 'lucide-react';
+import { motion } from 'framer-motion';
 import './Landing.css';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.2 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 300, damping: 30 }
+  }
+};
 
 const Landing = () => {
   return (
-    <div className="landing-container">
-      <div className="landing-bg-glow"></div>
+    <div className="landing-container bg-obsidian text-slate-100 min-h-screen font-inter selection:bg-cyan-neon/30">
+      <div className="landing-bg-glow absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-obsidian to-obsidian pointer-events-none"></div>
       
       {/* Hero Section */}
-      <section className="landing-hero">
-        <div className="brand-badge mb-8 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black tracking-widest uppercase text-cyan-400">
+      <motion.section 
+        className="landing-hero relative z-10 flex flex-col items-center justify-center pt-32 pb-20 text-center px-4"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div variants={itemVariants} className="brand-badge mb-8 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-black tracking-widest uppercase text-cyan-neon backdrop-blur-md shadow-glass-inset">
           SmartChat v2.0 • Digital Intimacy
-        </div>
-        <h1>Connect with the <br/> <span className="text-cyan-400">Digital World</span></h1>
-        <p>
+        </motion.div>
+        
+        <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 leading-tight">
+          Connect with the <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-neon to-purple-plasma">Digital World</span>
+        </motion.h1>
+        
+        <motion.p variants={itemVariants} className="max-w-2xl text-slate-400 text-lg md:text-xl mb-12">
           Experience high-fidelity video chat powered by interest-based matching. 
           The next generation of human connection is here.
-        </p>
-        <Link to="/login" className="cta-button">
-          START CHATTING NOW
-        </Link>
-      </section>
+        </motion.p>
+        
+        <motion.div variants={itemVariants}>
+          <Link to="/login" className="cta-button group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white bg-white/10 rounded-2xl backdrop-blur-md border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-neon-cyan overflow-hidden">
+            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-cyan-neon/20 to-purple-plasma/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <span className="relative z-10 uppercase tracking-widest text-sm">START CHATTING NOW</span>
+          </Link>
+        </motion.div>
+      </motion.section>
 
-      {/* Demo Preview */}
-      <section className="demo-preview">
-        <div className="preview-window">
-          <div className="preview-content">
-            <div className="preview-overlay"></div>
-            <div className="absolute bottom-8 left-8 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-cyan-400/20 border border-cyan-400/30 flex items-center justify-center">
-                <Users size={20} className="text-cyan-400" />
-              </div>
-              <div>
-                <p className="text-xs font-black uppercase text-white">Live Match</p>
-                <p className="text-[10px] text-gray-400">9.4k Users Online</p>
-              </div>
-            </div>
+      {/* Features Section - Bento Box Style */}
+      <motion.section 
+        className="landing-features relative z-10 max-w-6xl mx-auto px-4 py-20 grid grid-cols-1 md:grid-cols-3 gap-6"
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+      >
+        <motion.div variants={itemVariants} className="feature-card relative overflow-hidden bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-cyan-neon/50 transition-colors duration-300 group shadow-glass-inset">
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div className="feature-icon w-12 h-12 rounded-xl bg-cyan-neon/10 flex items-center justify-center mb-6 border border-cyan-neon/20 group-hover:scale-110 transition-transform duration-300">
+            <Zap size={24} className="text-cyan-neon" />
           </div>
-        </div>
-      </section>
+          <h3 className="text-xl font-semibold mb-3 text-white tracking-tight">Smart Matching</h3>
+          <p className="text-slate-400 leading-relaxed text-sm">Our advanced algorithm connects you with people who share your specific passions and hobbies.</p>
+        </motion.div>
 
-      {/* Features Section */}
-      <section className="landing-features">
-        <div className="feature-card glass-panel">
-          <div className="feature-icon">
-            <Zap size={24} />
+        <motion.div variants={itemVariants} className="feature-card relative overflow-hidden bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-purple-plasma/50 transition-colors duration-300 group shadow-glass-inset">
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div className="feature-icon w-12 h-12 rounded-xl bg-purple-plasma/10 flex items-center justify-center mb-6 border border-purple-plasma/20 group-hover:scale-110 transition-transform duration-300">
+            <Shield size={24} className="text-purple-plasma" />
           </div>
-          <h3>Smart Matching</h3>
-          <p>Our advanced algorithm connects you with people who share your specific passions and hobbies.</p>
-        </div>
+          <h3 className="text-xl font-semibold mb-3 text-white tracking-tight">AI Moderation</h3>
+          <p className="text-slate-400 leading-relaxed text-sm">Real-time safety filters ensure a clean and respectful environment for everyone, automatically.</p>
+        </motion.div>
 
-        <div className="feature-card glass-panel">
-          <div className="feature-icon">
-            <Shield size={24} />
+        <motion.div variants={itemVariants} className="feature-card relative overflow-hidden bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-white/30 transition-colors duration-300 group shadow-glass-inset">
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div className="feature-icon w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 border border-white/10 group-hover:scale-110 transition-transform duration-300">
+            <Lock size={24} className="text-slate-300" />
           </div>
-          <h3>AI Moderation</h3>
-          <p>Real-time safety filters ensure a clean and respectful environment for everyone, automatically.</p>
-        </div>
+          <h3 className="text-xl font-semibold mb-3 text-white tracking-tight">Encrypted Privacy</h3>
+          <p className="text-slate-400 leading-relaxed text-sm">Your connections are secure and private. We prioritize your digital safety above all else.</p>
+        </motion.div>
+      </motion.section>
 
-        <div className="feature-card glass-panel">
-          <div className="feature-icon">
-            <Lock size={24} />
-          </div>
-          <h3>Encrypted Privacy</h3>
-          <p>Your connections are secure and private. We prioritize your digital safety above all else.</p>
-        </div>
-      </section>
-
-      {/* Footer / Final CTA */}
-      <footer className="py-20 text-center border-t border-white/5">
-        <p className="text-[10px] font-black tracking-[0.3em] uppercase text-gray-600 mb-4">
+      {/* Footer */}
+      <footer className="relative z-10 py-12 text-center border-t border-white/5 bg-obsidian/80 backdrop-blur-md">
+        <p className="text-[10px] font-black tracking-[0.3em] uppercase text-slate-600 mb-6">
           Built for the future of social interaction
         </p>
-        <div className="flex justify-center gap-8 text-gray-500 text-xs font-bold uppercase tracking-widest">
-          <a href="#" className="hover:text-cyan-400 transition-colors">Safety</a>
-          <a href="#" className="hover:text-cyan-400 transition-colors">Privacy</a>
-          <a href="#" className="hover:text-cyan-400 transition-colors">Terms</a>
+        <div className="flex justify-center gap-8 text-slate-500 text-xs font-bold uppercase tracking-widest">
+          <a href="#" className="hover:text-cyan-neon transition-colors duration-300">Safety</a>
+          <a href="#" className="hover:text-cyan-neon transition-colors duration-300">Privacy</a>
+          <a href="#" className="hover:text-cyan-neon transition-colors duration-300">Terms</a>
         </div>
       </footer>
     </div>

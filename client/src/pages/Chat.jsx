@@ -623,322 +623,333 @@ const Chat = () => {
   };
 
   return (
-    <div className="chat-container h-[100dvh] select-none touch-none">
-      <div className="chat-layout">
-        {/* Left Sidebar: Info & Interests */}
-        <div className="chat-sidebar glass-panel">
-          <div className="sidebar-section">
-            <h3 className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,255,255,0.5)]"></div> 
-              Your Profile
+    <div className="chat-container h-[100dvh] w-full bg-obsidian text-slate-100 select-none touch-none overflow-hidden font-inter p-2 md:p-4">
+      {/* Background Ambience */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900/40 via-obsidian to-obsidian pointer-events-none"></div>
+
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 h-full max-w-[1600px] mx-auto relative z-10">
+        
+        {/* Left Sidebar: Info & Bento Modules */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="md:col-span-3 flex flex-col gap-4 h-full"
+        >
+          {/* Profile Module */}
+          <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-glass-inset flex flex-col gap-4 h-1/3">
+            <h3 className="flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-300">
+              <div className="w-2 h-2 rounded-full bg-cyan-neon shadow-[0_0_8px_rgba(0,240,255,0.6)] animate-pulse-slow"></div> 
+              User Identity
             </h3>
             <div className="user-profile-mini">
-              <p className="text-sm font-black">{currentUser?.displayName}</p>
-              <p className="text-[10px] text-gray-500 truncate">{currentUser?.email}</p>
+              <p className="text-xl font-bold tracking-tight">{currentUser?.displayName}</p>
+              <p className="text-xs text-slate-500 font-mono tracking-tighter truncate">{currentUser?.email}</p>
             </div>
-
-            <h3 className="mt-8">Your Interests</h3>
-            <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-full text-[10px] font-black uppercase">
+            
+            <h3 className="mt-auto text-xs font-semibold uppercase tracking-widest text-slate-500">Active Node</h3>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <span className="px-3 py-1 bg-cyan-neon/10 border border-cyan-neon/20 text-cyan-neon rounded-full text-[10px] font-black uppercase tracking-wider">
                 {userInterests?.category}
               </span>
-              {userInterests?.subOptions?.map(sub => (
-                <span key={sub} className="px-3 py-1 bg-white/5 border border-white/10 text-gray-400 rounded-full text-[10px]">
-                  {sub}
-                </span>
-              ))}
             </div>
-            {partnerMuted && (
-              <div className="mt-4 p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-300 text-[10px] flex items-center gap-1">
-                <MicOff size={12} /> Stranger is muted
-              </div>
-            )}
           </div>
 
-          <div className="sidebar-section">
-            <h3 className="mt-8">Stranger Status</h3>
+          {/* Connection Status Module */}
+          <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-glass-inset flex flex-col h-2/3">
+            <h3 className="text-sm font-semibold tracking-tight text-slate-300 mb-6">Link Status</h3>
             {chatState === 'connected' ? (
-              <div className="p-4 bg-cyan-500/5 border border-cyan-500/10 rounded-2xl animate-pulse-glow">
-                <div className="flex items-center gap-2 text-cyan-400">
-                  <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_#00FFFF]"></div>
-                  <span className="font-black text-xs uppercase">Encrypted Match</span>
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="p-5 bg-cyan-neon/5 border border-cyan-neon/20 rounded-xl relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-neon/0 via-cyan-neon/10 to-cyan-neon/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <div className="flex items-center gap-3 text-cyan-neon mb-2">
+                  <div className="relative flex items-center justify-center">
+                    <div className="absolute w-full h-full bg-cyan-neon rounded-full blur-md opacity-50"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-cyan-neon relative z-10"></div>
+                  </div>
+                  <span className="font-bold text-xs uppercase tracking-widest">Encrypted Match</span>
                 </div>
                 {partnerInterests && (
-                  <div className="mt-2 text-[10px] text-gray-500">
-                    Category: <span className="text-white">{partnerInterests.category}</span>
+                  <div className="mt-4 text-[10px] font-mono tracking-tight text-slate-400">
+                    Routing: <span className="text-white">{partnerInterests.category}</span>
                   </div>
                 )}
-              </div>
+                {/* Live Signal Waveform */}
+                <div className="flex items-end gap-1 h-6 mt-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="w-1.5 bg-cyan-neon rounded-t-sm animate-live-signal" style={{ animationDelay: `${i * 0.15}s`, height: `${Math.max(40, Math.random() * 100)}%` }}></div>
+                  ))}
+                </div>
+              </motion.div>
             ) : chatState === 'looking' ? (
-              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl animate-pulse">
-                <div className="flex items-center gap-2 text-gray-400">
-                  <Loader className="animate-spin" size={14} />
-                  <span className="text-xs font-bold uppercase">Scanning...</span>
+              <div className="p-5 bg-white/5 border border-white/10 rounded-xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-0.5 bg-cyan-neon/40"></div>
+                <div className="flex items-center gap-3 text-slate-400">
+                  <Loader className="animate-spin text-cyan-neon" size={16} />
+                  <span className="text-xs font-bold uppercase tracking-widest">Scanning Network...</span>
                 </div>
               </div>
             ) : (
-              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl opacity-30">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <UserX size={14} />
-                  <span className="text-xs font-bold uppercase">Standby</span>
+              <div className="p-5 bg-obsidian/40 border border-white/5 rounded-xl opacity-60">
+                <div className="flex items-center gap-3 text-slate-600">
+                  <UserX size={16} />
+                  <span className="text-xs font-bold uppercase tracking-widest">Standby Mode</span>
                 </div>
               </div>
             )}
+            
+            {partnerMuted && chatState === 'connected' && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-medium flex items-center gap-2">
+                <MicOff size={14} /> Remote Audio Offline
+              </motion.div>
+            )}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Center: Video Main Area */}
-        <div className="video-main glass-panel overflow-hidden">
-          <div className="video-display bg-gray-950 relative">
+        {/* Center: Video Main Area (Bento Hero) */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.1 }}
+          className={`md:col-span-6 bg-obsidian rounded-2xl overflow-hidden border ${chatState === 'connected' ? 'border-cyan-neon/30 shadow-neon-cyan' : 'border-white/10 shadow-glass-inset'} relative group transition-all duration-500`}
+        >
+          {chatState === 'connected' && (
+             <div className="absolute inset-0 p-[1px] bg-gradient-to-r from-cyan-neon via-purple-plasma to-cyan-neon animate-running-light rounded-2xl pointer-events-none z-30 opacity-50"></div>
+          )}
+          
+          <div className="absolute inset-[1px] rounded-[calc(1.5rem-1px)] overflow-hidden bg-obsidian z-0">
             {remoteStream ? (
-              <div className="remote-video-container">
+              <motion.div 
+                initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                className="w-full h-full relative"
+              >
                 <video
                   ref={remoteVideoRef}
                   autoPlay
                   playsInline
                   onLoadedMetadata={(e) => e.target.play().catch(err => console.error("Remote play blocked", err))}
-                  className="w-full h-full object-cover transition-all duration-500"
+                  className="w-full h-full object-cover"
                   style={{ filter: isRemoteBlurred ? 'blur(20px)' : 'none' }}
                 />
-                {!remoteStream && chatState === 'connected' && (
-                  <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-2xl flex flex-col items-center justify-center text-white z-20">
-                    <Loader className="animate-spin mb-4 text-cyan-400" size={32} />
-                    <p className="text-xs font-black tracking-[0.2em] uppercase">Syncing Stream...</p>
+                
+                {/* Connection syncing overlay */}
+                {!remoteStream.active && chatState === 'connected' && (
+                  <div className="absolute inset-0 bg-obsidian/80 backdrop-blur-xl flex flex-col items-center justify-center text-white z-20">
+                    <Loader className="animate-spin mb-4 text-cyan-neon" size={32} />
+                    <p className="text-[10px] font-black tracking-[0.3em] uppercase">Syncing Handshake...</p>
                   </div>
                 )}
+                
+                {/* Shield Overlay */}
                 <AnimatePresence>
                   {isRemoteBlurred && !partnerVideoOff && (
                     <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="absolute inset-0 bg-black/60 backdrop-blur-2xl flex flex-col items-center justify-center z-10"
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="absolute inset-0 bg-black/70 backdrop-blur-xl flex flex-col items-center justify-center z-10"
                     >
-                      <AlertCircle size={64} className="text-red-500 mb-4 animate-pulse" />
-                      <p className="text-white font-black text-xl tracking-tight uppercase px-8 py-3 bg-red-600/20 border border-red-500/30 rounded-2xl">
-                        Shield Active
+                      <AlertCircle size={48} className="text-red-500 mb-4 animate-pulse" />
+                      <p className="text-white font-black text-sm tracking-widest uppercase px-6 py-2 bg-red-600/20 border border-red-500/30 rounded-xl">
+                        Shield Intervention
                       </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </motion.div>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 bg-slate-950">
-                <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 animate-pulse-glow">
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 bg-obsidian">
+                <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-glass-inset">
                   <VideoOff size={32} className="opacity-30" />
                 </div>
-                <p className="text-sm font-bold tracking-widest uppercase opacity-40">Finding a connection...</p>
+                <p className="text-[10px] font-bold tracking-[0.3em] uppercase opacity-40">Awaiting Signal</p>
               </div>
             )}
+          </div>
 
-            {/* Local Video Overlay */}
-            <div className="local-video-overlay absolute bottom-4 right-4 w-32 h-44 sm:w-40 sm:h-56 bg-slate-900 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-20 transition-all hover:scale-105">
-              {localStream ? (
-                <>
-                  <video
-                    ref={localVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    onLoadedMetadata={(e) => e.target.play().catch(err => console.error("Local play blocked", err))}
-                    className={`w-full h-full object-cover mirror ${isBlurActive ? 'hidden' : 'block'}`}
-                  />
-                  <canvas
-                    ref={canvasRef}
-                    className={`w-full h-full object-cover mirror ${isBlurActive ? 'block' : 'hidden'}`}
-                  />
-                </>
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-gray-600 bg-slate-900">
-                  <VideoOff size={24} className="mb-2" />
-                  {webrtcError?.includes('Locked') || webrtcError?.includes('Unavailable') ? (
-                    <span className="text-[9px] text-center px-1 text-red-400">Locked by other app</span>
-                  ) : (
-                    <span className="text-[10px]">No Camera</span>
-                  )}
-                </div>
-              )}
-              {isVideoOff && localStream && (
-                <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center">
-                  <VideoOff size={24} className="text-red-500" />
-                </div>
-              )}
-              {/* In-Video Controls */}
-              <div className="video-actions glass-panel shadow-2xl">
-                <button
-                  type="button"
-                  onClick={toggleVideo}
-                  className={`action-btn ${isVideoOff ? 'danger' : ''}`}
-                  title={isVideoOff ? "Turn Video On" : "Turn Video Off"}
-                >
-                  {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleMute}
-                  className={`action-btn ${isMuted ? 'danger' : ''}`}
-                  title={isMuted ? "Unmute" : "Mute"}
-                >
-                  {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={toggleBlur}
-                  className={`action-btn ${isBlurActive ? 'active-purple' : ''}`}
-                  title={isBlurActive ? "Disable Blur" : "Blur Background"}
-                >
-                  <UserX size={20} />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={toggleCamera}
-                  className="action-btn active-blue md:hidden"
-                  title="Switch Camera"
-                >
-                  <SwitchCamera size={20} />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={toggleFlashlight}
-                  className={`action-btn ${isFlashlightOn ? 'active-purple' : ''} md:hidden`}
-                  title="Toggle Flashlight"
-                >
-                  {isFlashlightOn ? <FlashlightOff size={20} /> : <Flashlight size={20} />}
-                </button>
-
-                <div className="w-px h-8 bg-white/10 mx-2 hidden sm:block"></div>
-
-                {chatState === 'connected' ? (
-                  <button
-                    onClick={handleSkip}
-                    className="h-12 px-8 bg-white text-black font-black rounded-full hover:bg-red-500 hover:text-white transition-all flex items-center gap-2"
-                  >
-                    <RefreshCw size={18} className={isSkipping ? 'animate-spin' : ''} />
-                    SKIP
-                  </button>
+          {/* Local Video Overlay (Bento Sub-module) */}
+          <div className="absolute bottom-6 right-6 w-32 h-48 sm:w-44 sm:h-64 bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-20 group/local">
+            <div className="absolute inset-0 border border-white/10 rounded-2xl z-30 pointer-events-none"></div>
+            {localStream ? (
+              <>
+                <video
+                  ref={localVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  onLoadedMetadata={(e) => e.target.play().catch(err => console.error("Local play blocked", err))}
+                  className={`w-full h-full object-cover mirror ${isBlurActive ? 'hidden' : 'block'}`}
+                />
+                <canvas
+                  ref={canvasRef}
+                  className={`w-full h-full object-cover mirror ${isBlurActive ? 'block' : 'hidden'}`}
+                />
+              </>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-600 bg-obsidian">
+                <VideoOff size={24} className="mb-2 opacity-50" />
+                {webrtcError?.includes('Locked') || webrtcError?.includes('Unavailable') ? (
+                  <span className="text-[9px] text-center px-2 text-red-400 font-mono">Hardware Locked</span>
                 ) : (
-                  <button
-                    onClick={startLooking}
-                    disabled={chatState === 'looking'}
-                    className="h-12 px-8 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-full shadow-[0_0_20px_rgba(0,255,255,0.4)] transition-all flex items-center gap-2 disabled:opacity-50"
-                  >
-                    {chatState === 'looking' ? <Loader className="animate-spin" size={18} /> : <Video size={18} />}
-                    {chatState === 'looking' ? 'LINKING...' : 'START'}
-                  </button>
+                  <span className="text-[9px] font-mono uppercase tracking-wider">No Feed</span>
                 )}
               </div>
-            </div>
+            )}
+            
+            {isVideoOff && localStream && (
+              <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-10">
+                <VideoOff size={24} className="text-red-500" />
+              </div>
+            )}
           </div>
-        </div>
 
-        {/* Right Panel: Chat Box */}
-        <div className="chat-panel glass-panel overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/2">
+          {/* Floating Action Controls Dock */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 p-3 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl z-20 transition-transform duration-300 hover:scale-105">
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleVideo} className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isVideoOff ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
+              {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
+            </motion.button>
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleMute} className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isMuted ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
+              {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+            </motion.button>
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleBlur} className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isBlurActive ? 'bg-purple-plasma/20 text-purple-plasma border border-purple-plasma/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
+              <UserX size={20} />
+            </motion.button>
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleCamera} className="w-12 h-12 rounded-full md:hidden flex items-center justify-center bg-white/10 text-white border border-white/10 hover:bg-white/20">
+              <SwitchCamera size={20} />
+            </motion.button>
+
+            <div className="w-px h-6 bg-white/10 mx-1 hidden sm:block"></div>
+
+            {chatState === 'connected' ? (
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleSkip} className="h-12 px-6 bg-red-500 hover:bg-red-400 text-white font-bold rounded-full shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all flex items-center gap-2 text-sm tracking-wide">
+                <RefreshCw size={16} className={isSkipping ? 'animate-spin' : ''} /> SKIP
+              </motion.button>
+            ) : (
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startLooking} disabled={chatState === 'looking'} className="h-12 px-6 bg-cyan-neon hover:bg-cyan-400 text-obsidian font-bold rounded-full shadow-neon-cyan transition-all flex items-center gap-2 disabled:opacity-50 text-sm tracking-wide">
+                {chatState === 'looking' ? <Loader className="animate-spin" size={16} /> : <Zap size={16} />}
+                {chatState === 'looking' ? 'LINKING' : 'START'}
+              </motion.button>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Right Panel: Chat Box (Bento Module) */}
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.2 }}
+          className="md:col-span-3 bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-glass-inset flex flex-col h-full overflow-hidden relative"
+        >
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+          
+          <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
             <div className="flex items-center gap-2">
-              <MessageSquare size={18} className="text-cyan-400" />
-              <h3 className="font-black text-xs uppercase tracking-[0.2em]">Live Feed</h3>
+              <MessageSquare size={16} className="text-purple-plasma" />
+              <h3 className="font-semibold text-xs uppercase tracking-[0.15em] text-slate-300">Telemetry Feed</h3>
             </div>
             {chatState === 'connected' && (
-              <button
-                onClick={() => setShowReportModal(true)}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-500"
-                title="Report User"
-              >
+              <button onClick={() => setShowReportModal(true)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-slate-500 hover:text-white" title="Report User">
                 <Flag size={14} />
               </button>
             )}
           </div>
 
-          <div className="message-list-panel flex-1 overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 custom-scrollbar">
             {messages.length === 0 && !partnerLeft && (
-              <div className="h-full flex flex-col items-center justify-center text-center opacity-30">
-                <MessageCircle size={40} className="mb-2" />
-                <p className="text-xs">No messages yet</p>
+              <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
+                <MessageCircle size={32} className="mb-3 text-slate-500" />
+                <p className="text-[10px] font-mono tracking-widest uppercase text-slate-400">Log Empty</p>
               </div>
             )}
 
-            {messages.map((msg, idx) => (
-              <div key={idx} className={`msg-row ${msg.type}`}>
-                {msg.type === 'system' ? (
-                  <div className="msg-system text-[10px] text-gray-500 bg-white/5 px-2 py-1 rounded text-center w-full">{msg.text}</div>
-                ) : (
-                  <div className={`msg-bubble shadow-sm ${msg.type}`}>
-                    <span className="msg-sender-label">{msg.type === 'me' ? 'You' : 'Stranger'}:</span>
-                    <p className="msg-text">{msg.text}</p>
+            <AnimatePresence>
+              {messages.map((msg, idx) => (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  key={idx} className={`flex flex-col w-full ${msg.type === 'me' ? 'items-end' : msg.type === 'stranger' ? 'items-start' : 'items-center'}`}
+                >
+                  {msg.type === 'system' ? (
+                    <div className="text-[10px] font-mono text-slate-500 bg-white/5 border border-white/5 px-3 py-1.5 rounded-full text-center tracking-wide">{msg.text}</div>
+                  ) : (
+                    <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm backdrop-blur-md border ${
+                      msg.type === 'me' 
+                        ? 'bg-purple-plasma/20 border-purple-plasma/30 text-white rounded-tr-sm' 
+                        : 'bg-white/10 border-white/10 text-slate-200 rounded-tl-sm'
+                    }`}>
+                      <p>{msg.text}</p>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+              
+              {partnerTyping && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-start w-full">
+                  <div className="px-4 py-3 bg-white/5 border border-white/5 rounded-2xl rounded-tl-sm flex gap-1.5">
+                    <motion.span animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-1.5 h-1.5 bg-slate-400 rounded-full"></motion.span>
+                    <motion.span animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-slate-400 rounded-full"></motion.span>
+                    <motion.span animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-slate-400 rounded-full"></motion.span>
                   </div>
-                )}
-              </div>
-            ))}
-
-            {partnerTyping && (
-              <div className="msg-row stranger">
-                <div className="typing-blob px-3 py-2 bg-white/5 rounded-xl flex gap-1">
-                  <span className="dot"></span><span className="dot"></span><span className="dot"></span>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={sendMessage} className="chat-input-panel p-3 bg-white/5 border-t border-white/10 flex gap-2">
+          <form onSubmit={sendMessage} className="p-3 bg-obsidian/40 border-t border-white/5 flex gap-2">
             <input
               type="text"
-              className="chat-input-field flex-1 text-sm bg-transparent border-none outline-none text-white p-1"
-              placeholder={chatState === 'connected' ? 'Type message...' : 'Waiting...'}
+              className="flex-1 text-sm bg-slate-900/50 border border-white/10 rounded-xl outline-none text-white px-4 py-3 focus:border-cyan-neon/50 focus:shadow-[inset_0_0_10px_rgba(0,240,255,0.1)] transition-all font-inter placeholder:text-slate-600 placeholder:text-xs"
+              placeholder={chatState === 'connected' ? 'Transmit data...' : 'Awaiting connection...'}
               value={inputValue}
               onChange={handleInputChange}
               disabled={chatState !== 'connected'}
               autoComplete="off"
             />
-            <button
+            <motion.button
+              whileHover={{ scale: chatState === 'connected' && inputValue.trim() ? 1.05 : 1 }}
+              whileTap={{ scale: chatState === 'connected' && inputValue.trim() ? 0.95 : 1 }}
               type="submit"
-              className="chat-send-btn p-2 bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-all disabled:opacity-20"
+              className={`p-3 rounded-xl flex items-center justify-center transition-all ${
+                inputValue.trim() && chatState === 'connected' 
+                  ? 'bg-cyan-neon text-obsidian shadow-neon-cyan' 
+                  : 'bg-white/5 text-slate-500 border border-white/5 cursor-not-allowed'
+              }`}
               disabled={!inputValue.trim() || chatState !== 'connected'}
             >
-              <Send size={16} />
-            </button>
+              <Send size={18} />
+            </motion.button>
           </form>
-        </div>
+        </motion.div>
       </div>
 
       {/* Report Modal */}
       <AnimatePresence>
         {showReportModal && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="modal-overlay"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-obsidian/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
             onClick={() => setShowReportModal(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="report-modal glass-panel bg-slate-900 border border-white/10"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold">Report User</h3>
-                <button onClick={() => setShowReportModal(false)}><X size={20} /></button>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-purple-plasma"></div>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold tracking-tight text-white">System Report</h3>
+                <button onClick={() => setShowReportModal(false)} className="text-slate-400 hover:text-white transition-colors"><X size={20} /></button>
               </div>
-              <div className="space-y-2 mb-6">
+              <div className="space-y-2 mb-8">
                 {REPORT_REASONS.map(r => (
                   <button
                     key={r.id}
                     onClick={() => setReportReason(r.id)}
-                    className={`w-full text-left p-3 rounded-xl border ${reportReason === r.id ? 'border-indigo-500 bg-indigo-500/20' : 'border-white/10 bg-white/5'}`}
+                    className={`w-full text-left p-4 rounded-xl border transition-all text-sm font-medium ${
+                      reportReason === r.id 
+                        ? 'border-purple-plasma bg-purple-plasma/10 text-white' 
+                        : 'border-white/5 bg-white/[0.02] text-slate-300 hover:bg-white/5'
+                    }`}
                   >
                     {r.label}
                   </button>
                 ))}
               </div>
-              <div className="flex gap-4">
-                <button className="flex-1 btn-secondary" onClick={() => setShowReportModal(false)}>Cancel</button>
-                <button className="flex-1 btn-primary" onClick={handleReport} disabled={!reportReason}>Submit</button>
+              <div className="flex gap-3">
+                <button className="flex-1 py-3 px-4 rounded-xl font-semibold text-sm bg-white/5 text-slate-300 hover:bg-white/10 transition-colors" onClick={() => setShowReportModal(false)}>Cancel</button>
+                <button className="flex-1 py-3 px-4 rounded-xl font-semibold text-sm bg-red-500 text-white hover:bg-red-400 transition-colors shadow-[0_0_15px_rgba(239,68,68,0.3)] disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleReport} disabled={!reportReason}>Transmit</button>
               </div>
             </motion.div>
           </motion.div>

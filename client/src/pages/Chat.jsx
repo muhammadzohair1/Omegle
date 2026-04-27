@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import {
-  Send, Loader, UserX, AlertCircle, RefreshCw, Flag, X,
+  Send, Loader, UserX, AlertCircle, RefreshCw, Flag, X, MessageSquare,
   Video, VideoOff, Mic, MicOff, MessageCircle, SwitchCamera, Flashlight, FlashlightOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

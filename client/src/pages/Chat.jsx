@@ -12,7 +12,6 @@ import { collection, addDoc, serverTimestamp, doc, getDoc, setDoc } from 'fireba
 import { useWebRTC } from '../hooks/useWebRTC';
 import * as tf from '@tensorflow/tfjs';
 import * as nsfwjs from 'nsfwjs';
-import * as SelfieSegmentation from '@mediapipe/selfie_segmentation';
 import './Chat.css';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
@@ -115,44 +114,66 @@ const Chat = () => {
     loadModel();
   }, [initializeMedia]);
 
-  // Initialize Selfie Segmentation
+  // Initialize Selfie Segmentation — load MediaPipe via CDN dynamically
+  // (The npm package has no ESM exports; CDN is the official recommended approach)
   useEffect(() => {
-    try {
-      const segmentation = new SelfieSegmentation.SelfieSegmentation({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
-      });
+    let cancelled = false;
 
-      segmentation.setOptions({
-        modelSelection: 1,
-        selfieMode: true,
-      });
+    const loadSegmentation = () => {
+      try {
+        // window.SelfieSegmentation is injected by the CDN script below
+        if (!window.SelfieSegmentation) {
+          console.warn('SelfieSegmentation not available on window yet.');
+          return;
+        }
+        const segmentation = new window.SelfieSegmentation({
+          locateFile: (file) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
+        });
 
-      segmentation.onResults((results) => {
-        if (!canvasRef.current || !localVideoRef.current) return;
-        const canvasCtx = canvasRef.current.getContext('2d');
-        canvasCtx.save();
-        canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        canvasCtx.drawImage(results.segmentationMask, 0, 0, canvasRef.current.width, canvasRef.current.height);
+        segmentation.setOptions({ modelSelection: 1, selfieMode: true });
 
-        // Draw the original image but only where the mask is present (person)
-        canvasCtx.globalCompositeOperation = 'source-in';
-        canvasCtx.drawImage(results.image, 0, 0, canvasRef.current.width, canvasRef.current.height);
+        segmentation.onResults((results) => {
+          if (cancelled || !canvasRef.current || !localVideoRef.current) return;
+          const ctx = canvasRef.current.getContext('2d');
+          ctx.save();
+          ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+          ctx.drawImage(results.segmentationMask, 0, 0, canvasRef.current.width, canvasRef.current.height);
+          ctx.globalCompositeOperation = 'source-in';
+          ctx.drawImage(results.image, 0, 0, canvasRef.current.width, canvasRef.current.height);
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.filter = 'blur(15px)';
+          ctx.drawImage(results.image, 0, 0, canvasRef.current.width, canvasRef.current.height);
+          ctx.restore();
+        });
 
-        // Draw the blurred background
-        canvasCtx.globalCompositeOperation = 'destination-over';
-        canvasCtx.filter = 'blur(15px)';
-        canvasCtx.drawImage(results.image, 0, 0, canvasRef.current.width, canvasRef.current.height);
-        canvasCtx.restore();
-      });
+        selfieSegmentationRef.current = segmentation;
+      } catch (err) {
+        console.error('SelfieSegmentation init failed (non-fatal):', err);
+      }
+    };
 
-      selfieSegmentationRef.current = segmentation;
-    } catch (err) {
-      console.error('SelfieSegmentation init failed:', err);
+    // Inject CDN script if not already present
+    const CDN_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js';
+    if (!document.querySelector(`script[src="${CDN_URL}"]`)) {
+      const script = document.createElement('script');
+      script.src = CDN_URL;
+      script.crossOrigin = 'anonymous';
+      script.onload = () => { if (!cancelled) loadSegmentation(); };
+      script.onerror = () => console.warn('MediaPipe CDN failed to load — background blur disabled.');
+      document.head.appendChild(script);
+    } else {
+      // Script already in DOM (hot-reload case)
+      loadSegmentation();
     }
 
     return () => {
+      cancelled = true;
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-      if (selfieSegmentationRef.current) selfieSegmentationRef.current.close();
+      if (selfieSegmentationRef.current) {
+        try { selfieSegmentationRef.current.close(); } catch (_) {}
+        selfieSegmentationRef.current = null;
+      }
     };
   }, []);
   

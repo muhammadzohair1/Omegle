@@ -683,10 +683,13 @@ const Chat = () => {
               </motion.div>
             ) : chatState === 'looking' ? (
               <div className="p-5 bg-white/5 border border-white/10 rounded-xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-0.5 bg-cyan-neon/40"></div>
+                <div className="absolute top-0 left-0 w-full h-0.5 bg-cyan-neon/40 animate-pulse"></div>
                 <div className="flex items-center gap-3 text-slate-400">
-                  <Loader className="animate-spin text-cyan-neon" size={16} />
-                  <span className="text-xs font-bold uppercase tracking-widest">Scanning Network...</span>
+                  <div className="relative flex items-center justify-center">
+                    <div className="absolute w-6 h-6 bg-cyan-neon/30 rounded-full animate-ping"></div>
+                    <Loader className="animate-spin text-cyan-neon relative z-10" size={16} />
+                  </div>
+                  <span className="text-xs font-bold uppercase tracking-widest animate-pulse">Scanning Network...</span>
                 </div>
               </div>
             ) : chatState === 'server_offline' ? (

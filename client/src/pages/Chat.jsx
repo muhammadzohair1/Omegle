@@ -322,7 +322,7 @@ const Chat = () => {
     let connectionTimeout;
     try {
       newSocket = io(SOCKET_URL, {
-        transports: ['websocket', 'polling'],
+        transports: ['polling', 'websocket'],
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,

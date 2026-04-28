@@ -321,35 +321,41 @@ const Chat = () => {
     let newSocket;
     let connectionTimeout;
     try {
+      console.log('🔌 Initializing socket connection to:', SOCKET_URL);
       newSocket = io(SOCKET_URL, {
         transports: ['polling', 'websocket'],
         reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 2000,
+        reconnectionDelayMax: 10000,
+        withCredentials: true,
+        timeout: 20000
       });
 
       connectionTimeout = setTimeout(() => {
         if (!newSocket.connected) {
-          addSystemMessage('⚠️ Server Offline. Cannot reach matchmaking server.');
+          console.error('❌ Socket connection timed out after 20s');
+          addSystemMessage('⚠️ Connection Timeout. The server might be sleeping or blocked by your network.');
           setChatState('server_offline');
         }
-      }, 10000);
+      }, 20000);
 
       newSocket.on('connect', () => {
+        console.log('✅ Socket Connected! ID:', newSocket.id);
         clearTimeout(connectionTimeout);
-        if (chatState === 'server_offline') setChatState('idle');
+        setChatState('idle');
       });
 
       newSocket.on('connect_error', (error) => {
-        console.warn('Socket connect_error:', error);
-        addSystemMessage('Reconnecting to server...');
+        console.warn('❌ Socket Connection Error:', error.message);
+        console.dir(error);
+        addSystemMessage(`📶 Link Error: ${error.message}`);
       });
 
       newSocket.on('disconnect', (reason) => {
-        console.warn('Socket disconnected:', reason);
-        addSystemMessage('Connection lost. Reconnecting...');
-        if (reason === 'io server disconnect') {
+        console.warn('🔌 Socket Disconnected:', reason);
+        if (reason === 'io server disconnect' || reason === 'transport close') {
+          addSystemMessage('📡 Connection unstable. Re-linking...');
           newSocket.connect();
         }
       });
@@ -831,9 +837,14 @@ const Chat = () => {
                 <RefreshCw size={14} className={isSkipping ? 'animate-spin' : ''} /> SKIP
               </motion.button>
             ) : (
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startLooking} disabled={chatState === 'looking' || chatState === 'server_offline'} className="h-10 md:h-12 px-4 md:px-6 bg-cyan-neon hover:bg-cyan-400 text-obsidian font-bold rounded-full shadow-neon-cyan transition-all flex items-center gap-2 disabled:opacity-50 text-xs md:text-sm tracking-wide">
-                {chatState === 'looking' ? <Loader className="animate-spin" size={14} /> : chatState === 'server_offline' ? <AlertCircle size={14} /> : <Activity size={14} />}
-                {chatState === 'looking' ? 'LINKING' : chatState === 'server_offline' ? 'OFFLINE' : 'START'}
+              <motion.button 
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} 
+                onClick={chatState === 'server_offline' ? () => socket?.connect() : startLooking} 
+                disabled={chatState === 'looking'} 
+                className="h-10 md:h-12 px-4 md:px-6 bg-cyan-neon hover:bg-cyan-400 text-obsidian font-bold rounded-full shadow-neon-cyan transition-all flex items-center gap-2 disabled:opacity-50 text-xs md:text-sm tracking-wide"
+              >
+                {chatState === 'looking' ? <Loader className="animate-spin" size={14} /> : chatState === 'server_offline' ? <RefreshCw size={14} /> : <Activity size={14} />}
+                {chatState === 'looking' ? 'LINKING' : chatState === 'server_offline' ? 'RETRY LINK' : 'START'}
               </motion.button>
             )}
           </div>

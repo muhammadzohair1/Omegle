@@ -21,8 +21,10 @@ const io = new Server(server, {
     credentials: true
   },
   transports: ['polling', 'websocket'],
+  allowEIO3: true,
   pingTimeout: 60000,
-  pingInterval: 25000
+  pingInterval: 25000,
+  connectTimeout: 45000
 });
 
 const PORT = process.env.PORT || 5000;

@@ -77,42 +77,7 @@ const Chat = () => {
   useEffect(() => {
     initializeMedia().catch(err => console.error("Camera access denied:", err));
 
-    // Load NSFW model
-    const loadModel = async () => {
-      setIsModelLoading(true);
-      
-      // Emergency timeout to ensure UI renders even on slow connections
-      const forceShowUI = setTimeout(() => {
-        setIsModelLoading(false);
-        console.warn('Model loading timeout: Forcing UI display');
-      }, 5000);
-
-      try {
-        console.log('Loading NSFW model...');
-        // Try local path first with absolute URL to prevent 404 on sub-routes
-        const localPath = `${window.location.origin}/model/`;
-        let model;
-        // Temporarily force CDN version due to local file corruption
-        // try {
-        //   model = await nsfwjs.load(localPath);
-        //   console.log('NSFW model loaded from local path.');
-        // } catch (localErr) {
-        //   console.warn('Local NSFW model failed (possibly corrupted files), falling back to CDN...', localErr);
-          model = await nsfwjs.load(); // Default CDN fallback
-          console.log('NSFW model loaded from CDN.');
-        // }
-        
-        setNsfwModel(model);
-        addSystemMessage('🛡️ Safety Shield Active');
-      } catch (err) {
-        console.error('Failed to load NSFW model:', err);
-        addSystemMessage('❌ Safety Shield Failed to Load. Basic chat active.');
-      } finally {
-        clearTimeout(forceShowUI);
-        setIsModelLoading(false);
-      }
-    };
-    loadModel();
+    // NSFW Model Loading is deferred to optimize initial load.
   }, [initializeMedia]);
 
   // Initialize Selfie Segmentation — load MediaPipe via CDN dynamically
@@ -262,11 +227,27 @@ const Chat = () => {
     }
   }, [remoteStream]);
 
-  // NSFW Classification Loop
+  // NSFW Classification Loop (Loads model lazily when connected)
   useEffect(() => {
     let interval;
-    if (chatState === 'connected' && remoteStream && nsfwModel && remoteVideoRef.current) {
-      console.log('NSFW classification loop started');
+    if (chatState === 'connected' && remoteStream && remoteVideoRef.current) {
+      // Lazy load model if not already loaded
+      if (!nsfwModel && !isModelLoading) {
+        setIsModelLoading(true);
+        console.log('Lazy loading NSFW model...');
+        nsfwjs.load().then(model => {
+          setNsfwModel(model);
+          addSystemMessage('🛡️ Safety Shield Active');
+        }).catch(err => {
+          console.error('Failed to load NSFW model:', err);
+          addSystemMessage('❌ Safety Shield Failed to Load.');
+        }).finally(() => {
+          setIsModelLoading(false);
+        });
+      }
+
+      if (nsfwModel) {
+        console.log('NSFW classification loop started');
       interval = setInterval(async () => {
         if (remoteVideoRef.current && remoteVideoRef.current.readyState === 4) {
           try {
@@ -313,6 +294,7 @@ const Chat = () => {
           console.log('Waiting for remote video to be ready for classification...');
         }
       }, 3000);
+      }
     } else {
       console.log('NSFW Loop conditions not met:', {
         chatState,
@@ -337,12 +319,26 @@ const Chat = () => {
 
   useEffect(() => {
     let newSocket;
+    let connectionTimeout;
     try {
       newSocket = io(SOCKET_URL, {
+        transports: ['websocket'],
         reconnection: true,
         reconnectionAttempts: Infinity,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
+      });
+
+      connectionTimeout = setTimeout(() => {
+        if (!newSocket.connected) {
+          addSystemMessage('⚠️ Server Offline. Cannot reach matchmaking server.');
+          setChatState('server_offline');
+        }
+      }, 10000);
+
+      newSocket.on('connect', () => {
+        clearTimeout(connectionTimeout);
+        if (chatState === 'server_offline') setChatState('idle');
       });
 
       newSocket.on('connect_error', (error) => {
@@ -693,6 +689,13 @@ const Chat = () => {
                   <span className="text-xs font-bold uppercase tracking-widest">Scanning Network...</span>
                 </div>
               </div>
+            ) : chatState === 'server_offline' ? (
+              <div className="p-5 bg-red-500/10 border border-red-500/20 rounded-xl relative overflow-hidden">
+                <div className="flex items-center gap-3 text-red-400">
+                  <AlertCircle size={16} />
+                  <span className="text-xs font-bold uppercase tracking-widest">Server Offline</span>
+                </div>
+              </div>
             ) : (
               <div className="p-5 bg-obsidian/40 border border-white/5 rounded-xl opacity-60">
                 <div className="flex items-center gap-3 text-slate-600">
@@ -825,9 +828,9 @@ const Chat = () => {
                 <RefreshCw size={14} className={isSkipping ? 'animate-spin' : ''} /> SKIP
               </motion.button>
             ) : (
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startLooking} disabled={chatState === 'looking'} className="h-10 md:h-12 px-4 md:px-6 bg-cyan-neon hover:bg-cyan-400 text-obsidian font-bold rounded-full shadow-neon-cyan transition-all flex items-center gap-2 disabled:opacity-50 text-xs md:text-sm tracking-wide">
-                {chatState === 'looking' ? <Loader className="animate-spin" size={14} /> : <Activity size={14} />}
-                {chatState === 'looking' ? 'LINKING' : 'START'}
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={startLooking} disabled={chatState === 'looking' || chatState === 'server_offline'} className="h-10 md:h-12 px-4 md:px-6 bg-cyan-neon hover:bg-cyan-400 text-obsidian font-bold rounded-full shadow-neon-cyan transition-all flex items-center gap-2 disabled:opacity-50 text-xs md:text-sm tracking-wide">
+                {chatState === 'looking' ? <Loader className="animate-spin" size={14} /> : chatState === 'server_offline' ? <AlertCircle size={14} /> : <Activity size={14} />}
+                {chatState === 'looking' ? 'LINKING' : chatState === 'server_offline' ? 'OFFLINE' : 'START'}
               </motion.button>
             )}
           </div>

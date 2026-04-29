@@ -693,14 +693,14 @@ const Chat = () => {
 
         
         {/* Left Sidebar: Info & Bento Modules (Hidden on mobile) */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className="hidden lg:flex md:col-span-3 flex-col gap-4 h-full"
         >
           {/* Profile Module */}
           <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-glass-inset flex flex-col gap-4 h-1/3">
             <h3 className="flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-300">
-              <div className="w-2 h-2 rounded-full bg-cyan-neon shadow-[0_0_8px_rgba(0,240,255,0.6)] animate-pulse-slow"></div> 
+              <div className="w-2 h-2 rounded-full bg-cyan-neon shadow-[0_0_8px_rgba(0,240,255,0.6)] animate-pulse-slow"></div>
               User Identity
             </h3>
             <div className="user-profile-mini">
@@ -777,7 +777,7 @@ const Chat = () => {
         </motion.div>
 
         {/* Center: Video Main Area (Bento Hero) */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.1 }}
           className={`lg:col-span-6 md:col-span-8 h-[50%] md:h-full bg-obsidian rounded-2xl overflow-hidden border ${chatState === 'connected' ? 'border-cyan-neon/30 shadow-neon-cyan' : 'border-white/10 shadow-glass-inset'} relative group transition-all duration-500`}
         >
@@ -786,7 +786,7 @@ const Chat = () => {
           
           <div className="absolute inset-[1px] rounded-[calc(1.5rem-1px)] overflow-hidden bg-obsidian z-0">
             {remoteStream ? (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 200, damping: 25 }}
                 className="w-full h-full relative"
               >
@@ -810,7 +810,7 @@ const Chat = () => {
                 {/* Shield Overlay */}
                 <AnimatePresence>
                   {isRemoteBlurred && !partnerVideoOff && (
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                       className="absolute inset-0 bg-black/70 backdrop-blur-xl flex flex-col items-center justify-center z-10"
                     >
@@ -893,10 +893,10 @@ const Chat = () => {
                 <RefreshCw size={12} className={isSkipping ? 'animate-spin' : ''} /> SKIP
               </motion.button>
             ) : (
-              <motion.button 
-                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} 
-                onClick={chatState === 'server_offline' ? () => socket?.connect() : startLooking} 
-                disabled={chatState === 'looking'} 
+              <motion.button
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                onClick={chatState === 'server_offline' ? () => socket?.connect() : startLooking}
+                disabled={chatState === 'looking'}
                 className="h-9 sm:h-10 md:h-12 px-3 sm:px-4 md:px-6 bg-cyan-neon hover:bg-cyan-400 text-obsidian font-bold rounded-full shadow-neon-cyan transition-all flex items-center gap-1.5 disabled:opacity-50 text-[10px] sm:text-xs md:text-sm tracking-wide"
               >
                 {chatState === 'looking' ? <Loader className="animate-spin" size={12} /> : chatState === 'server_offline' ? <RefreshCw size={12} /> : <Activity size={12} />}
@@ -908,7 +908,7 @@ const Chat = () => {
         </motion.div>
 
         {/* Right Panel: Chat Box (Bento Module) */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.2 }}
           className="lg:col-span-3 md:col-span-4 h-[50%] md:h-full bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-glass-inset flex flex-col overflow-hidden relative"
         >
@@ -936,18 +936,17 @@ const Chat = () => {
 
             <AnimatePresence>
               {messages.map((msg, idx) => (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   key={idx} className={`flex flex-col w-full ${msg.type === 'me' ? 'items-end' : msg.type === 'stranger' ? 'items-start' : 'items-center'}`}
                 >
                   {msg.type === 'system' ? (
                     <div className="text-[10px] font-mono text-slate-500 bg-white/5 border border-white/5 px-3 py-1.5 rounded-full text-center tracking-wide">{msg.text}</div>
                   ) : (
-                    <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm backdrop-blur-md border ${
-                      msg.type === 'me' 
-                        ? 'bg-purple-plasma/20 border-purple-plasma/30 text-white rounded-tr-sm' 
+                    <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm backdrop-blur-md border ${msg.type === 'me'
+                        ? 'bg-purple-plasma/20 border-purple-plasma/30 text-white rounded-tr-sm'
                         : 'bg-white/10 border-white/10 text-slate-200 rounded-tl-sm'
-                    }`}>
+                      }`}>
                       <p>{msg.text}</p>
                     </div>
                   )}
@@ -981,11 +980,10 @@ const Chat = () => {
               whileHover={{ scale: chatState === 'connected' && inputValue.trim() ? 1.05 : 1 }}
               whileTap={{ scale: chatState === 'connected' && inputValue.trim() ? 0.95 : 1 }}
               type="submit"
-              className={`p-3 rounded-xl flex items-center justify-center transition-all ${
-                inputValue.trim() && chatState === 'connected' 
-                  ? 'bg-cyan-neon text-obsidian shadow-neon-cyan' 
+              className={`p-3 rounded-xl flex items-center justify-center transition-all ${inputValue.trim() && chatState === 'connected'
+                  ? 'bg-cyan-neon text-obsidian shadow-neon-cyan'
                   : 'bg-white/5 text-slate-500 border border-white/5 cursor-not-allowed'
-              }`}
+                }`}
               disabled={!inputValue.trim() || chatState !== 'connected'}
             >
               <Send size={18} />
@@ -1018,11 +1016,10 @@ const Chat = () => {
                   <button
                     key={r.id}
                     onClick={() => setReportReason(r.id)}
-                    className={`w-full text-left p-4 rounded-xl border transition-all text-sm font-medium ${
-                      reportReason === r.id 
-                        ? 'border-purple-plasma bg-purple-plasma/10 text-white' 
+                    className={`w-full text-left p-4 rounded-xl border transition-all text-sm font-medium ${reportReason === r.id
+                        ? 'border-purple-plasma bg-purple-plasma/10 text-white'
                         : 'border-white/5 bg-white/[0.02] text-slate-300 hover:bg-white/5'
-                    }`}
+                      }`}
                   >
                     {r.label}
                   </button>
@@ -1035,65 +1032,67 @@ const Chat = () => {
             </motion.div>
           </motion.div>
         )}
+      </AnimatePresence>
+
       {/* Custom Debug Overlay */}
-      <div className="fixed bottom-4 left-4 z-[9999] flex flex-col gap-2">
-        <button 
-          onClick={() => setShowDebug(!showDebug)}
-          className="bg-obsidian/80 backdrop-blur-md border border-white/10 p-2 rounded-full text-white/50 hover:text-white transition-all shadow-xl"
-          title="Toggle Connection Debugger"
-        >
-          <Activity className={showDebug ? "text-cyan-neon" : ""} size={20} />
-        </button>
+        <div className="fixed bottom-4 left-4 z-[9999] flex flex-col gap-2">
+          <button
+            onClick={() => setShowDebug(!showDebug)}
+            className="bg-obsidian/80 backdrop-blur-md border border-white/10 p-2 rounded-full text-white/50 hover:text-white transition-all shadow-xl"
+            title="Toggle Connection Debugger"
+          >
+            <Activity className={showDebug ? "text-cyan-neon" : ""} size={20} />
+          </button>
 
-        <AnimatePresence>
-          {showDebug && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              className="bg-obsidian/90 backdrop-blur-xl border border-white/10 p-4 rounded-2xl w-80 shadow-2xl overflow-hidden"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-white/40">Link Telemetry</h4>
-                <div className={`h-2 w-2 rounded-full animate-pulse ${networkHealth.includes('Connected') ? 'bg-green-500' : 'bg-red-500'}`} />
-              </div>
-
-              <div className="space-y-3">
-                <div className="bg-white/5 p-2 rounded-lg">
-                  <p className="text-[10px] text-white/30 uppercase font-bold mb-1">Network Health</p>
-                  <p className="text-xs font-mono truncate">{networkHealth}</p>
+          <AnimatePresence>
+            {showDebug && (
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.9 }}
+                className="bg-obsidian/90 backdrop-blur-xl border border-white/10 p-4 rounded-2xl w-80 shadow-2xl overflow-hidden"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-white/40">Link Telemetry</h4>
+                  <div className={`h-2 w-2 rounded-full animate-pulse ${networkHealth.includes('Connected') ? 'bg-green-500' : 'bg-red-500'}`} />
                 </div>
 
-                <div className="bg-white/5 p-2 rounded-lg">
-                  <p className="text-[10px] text-white/30 uppercase font-bold mb-1">Active Engine</p>
-                  <p className="text-xs font-mono">
-                    {socket?.io?.engine?.transport?.name || 'Searching...'}
-                  </p>
-                </div>
+                <div className="space-y-3">
+                  <div className="bg-white/5 p-2 rounded-lg">
+                    <p className="text-[10px] text-white/30 uppercase font-bold mb-1">Network Health</p>
+                    <p className="text-xs font-mono truncate">{networkHealth}</p>
+                  </div>
 
-                <div className="space-y-1">
-                  <p className="text-[10px] text-white/30 uppercase font-bold mb-1">Event Stream</p>
-                  <div className="max-h-32 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
-                    {debugLogs.length === 0 && <p className="text-[10px] text-white/20 italic">No events recorded.</p>}
-                    {debugLogs.map(log => (
-                      <div key={log.id} className="text-[9px] font-mono leading-tight border-l-2 border-white/5 pl-2 py-0.5">
-                        <span className="text-white/20">[{log.time}]</span>{" "}
-                        <span className={
-                          log.type === 'error' ? 'text-red-400' : 
-                          log.type === 'success' ? 'text-cyan-neon' : 
-                          log.type === 'warn' ? 'text-yellow-400' : 'text-white/60'
-                        }>
-                          {log.msg}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="bg-white/5 p-2 rounded-lg">
+                    <p className="text-[10px] text-white/30 uppercase font-bold mb-1">Active Engine</p>
+                    <p className="text-xs font-mono">
+                      {socket?.io?.engine?.transport?.name || 'Searching...'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-white/30 uppercase font-bold mb-1">Event Stream</p>
+                    <div className="max-h-32 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                      {debugLogs.length === 0 && <p className="text-[10px] text-white/20 italic">No events recorded.</p>}
+                      {debugLogs.map(log => (
+                        <div key={log.id} className="text-[9px] font-mono leading-tight border-l-2 border-white/5 pl-2 py-0.5">
+                          <span className="text-white/20">[{log.time}]</span>{" "}
+                          <span className={
+                            log.type === 'error' ? 'text-red-400' :
+                              log.type === 'success' ? 'text-cyan-neon' :
+                                log.type === 'warn' ? 'text-yellow-400' : 'text-white/60'
+                          }>
+                            {log.msg}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
     </div>
   );
 };

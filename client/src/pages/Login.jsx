@@ -1,14 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { auth, provider, browserPopupRedirectResolver } from '../firebase';
-import { signInWithPopup } from 'firebase/auth';
+import { auth, provider } from '../firebase';
+import { signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Loader } from 'lucide-react';
 import './Login.css';
 
 const Login = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Capture the result when the user is redirected back to the app
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          console.log('✅ Redirect Login Successful');
+          navigate('/chat');
+        }
+      })
+      .catch((error) => {
+        console.error('Error with redirect result:', error);
+      });
+  }, [navigate]);
 
   if (currentUser) {
     return <Navigate to="/chat" />;
@@ -16,11 +30,10 @@ const Login = () => {
 
   const handleGoogleSignIn = async () => {
     try {
-      // Use the resolver to handle COOP/COEP isolation
-      await signInWithPopup(auth, provider, browserPopupRedirectResolver);
-      navigate('/chat');
+      // Switch to Redirect to bypass COOP/COEP popup blocks
+      await signInWithRedirect(auth, provider);
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error('Error initiating redirect sign in:', error);
     }
   };
 

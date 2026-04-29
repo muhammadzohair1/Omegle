@@ -9,6 +9,17 @@
       import { Buffer } from "buffer";
       window.Buffer = Buffer;
     </script>
+    <script>
+      // The Final Purge: Forcibly unregister all service workers to prevent 'ws-server' interception
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log('☢️ Service Worker Purged:', registration);
+          }
+        });
+      }
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#0A0A0C" />

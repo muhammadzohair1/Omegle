@@ -9,6 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
+        importScripts: ['/sw-bypass.js'],
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB
         globIgnores: ['model/**'],
         navigateFallbackDenylist: [/^\/ws-server/],

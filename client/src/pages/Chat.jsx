@@ -377,7 +377,7 @@ const Chat = () => {
       if (newSocket) newSocket.disconnect();
       clearTimeout(timeout);
     };
-  }, [chatState]);
+  }, []);
 
   useEffect(() => {
     if (!socket) return;

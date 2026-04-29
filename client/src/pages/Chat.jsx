@@ -38,7 +38,8 @@ const Chat = () => {
     error: webrtcError,
     toggleCamera,
     toggleFlashlight,
-    isFlashlightOn
+    isFlashlightOn,
+    replaceTrack
   } = useWebRTC(socket);
 
   const [chatState, setChatState] = useState('idle');
@@ -541,15 +542,32 @@ const Chat = () => {
     const newState = !isBlurActive;
     setIsBlurActive(newState);
 
-    if (newState) {
-      // Start processing
-      if (!canvasRef.current) return;
-      const stream = canvasRef.current.captureStream(30);
-      blurStreamRef.current = stream;
-
-      // We don't replace the actual WebRTC track here because it's complex, 
-      // but we update the UI local video.
-      // In a real app, we'd use replaceTrack in useWebRTC.
+    try {
+      if (newState) {
+        // Start processing
+        if (!canvasRef.current) return;
+        const stream = canvasRef.current.captureStream(30);
+        blurStreamRef.current = stream;
+        
+        const blurTrack = stream.getVideoTracks()[0];
+        if (blurTrack) {
+          console.log('Switching to BLURRED track for remote peer');
+          await replaceTrack(blurTrack);
+        }
+      } else {
+        // Switch back to original clear track
+        const originalTrack = localStream.getVideoTracks()[0];
+        if (originalTrack) {
+          console.log('Switching to CLEAR track for remote peer');
+          await replaceTrack(originalTrack);
+        }
+        if (blurStreamRef.current) {
+          blurStreamRef.current.getTracks().forEach(t => t.stop());
+          blurStreamRef.current = null;
+        }
+      }
+    } catch (err) {
+      console.error('Toggle blur track replacement failed:', err);
     }
   };
 
@@ -830,7 +848,7 @@ const Chat = () => {
             <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleMute} className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${isMuted ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
               {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
             </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleBlur} className={`hidden md:flex w-12 h-12 rounded-full items-center justify-center transition-colors ${isBlurActive ? 'bg-purple-plasma/20 text-purple-plasma border border-purple-plasma/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleBlur} className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${isBlurActive ? 'bg-purple-plasma/20 text-purple-plasma border border-purple-plasma/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
               <UserX size={18} />
             </motion.button>
             <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleCamera} className="w-10 h-10 md:hidden rounded-full flex items-center justify-center bg-white/10 text-white border border-white/10 hover:bg-white/20">

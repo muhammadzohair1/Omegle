@@ -263,6 +263,24 @@ export const useWebRTC = (socket) => {
     pendingCandidates.current = [];
   }, []);
 
+  const replaceTrack = useCallback(async (newTrack) => {
+    if (peerConnectionRef.current) {
+      const pc = peerConnectionRef.current;
+      const senders = pc.getSenders();
+      const sender = senders.find(s => s.track && s.track.kind === newTrack.kind);
+      if (sender) {
+        console.log('Replacing track in PeerConnection:', newTrack.kind);
+        try {
+          await sender.replaceTrack(newTrack);
+        } catch (err) {
+          console.error('Track replacement failed:', err);
+        }
+      } else {
+        console.warn('No sender found for track kind:', newTrack.kind);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       if (localStreamRef.current) {
@@ -283,7 +301,8 @@ export const useWebRTC = (socket) => {
     toggleCamera,
     toggleFlashlight,
     facingMode,
-    isFlashlightOn
+    isFlashlightOn,
+    replaceTrack
   };
 };
 

@@ -11,10 +11,10 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB
         globIgnores: ['model/**'],
-        navigateFallbackDenylist: [/^\/socket.io/],
+        navigateFallbackDenylist: [/socket\.io/],
         runtimeCaching: [
           {
-            urlPattern: /^\/socket.io/,
+            urlPattern: /.*socket\.io.*/,
             handler: 'NetworkOnly',
           }
         ]

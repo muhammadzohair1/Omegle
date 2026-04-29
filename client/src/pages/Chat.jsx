@@ -836,6 +836,9 @@ const Chat = () => {
             <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleCamera} className="w-10 h-10 md:hidden rounded-full flex items-center justify-center bg-white/10 text-white border border-white/10 hover:bg-white/20">
               <SwitchCamera size={18} />
             </motion.button>
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleFlashlight} className={`w-10 h-10 md:hidden rounded-full flex items-center justify-center transition-colors ${isFlashlightOn ? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
+              {isFlashlightOn ? <Flashlight size={18} /> : <FlashlightOff size={18} />}
+            </motion.button>
 
             <div className="w-px h-6 bg-white/10 mx-1 hidden sm:block"></div>
 

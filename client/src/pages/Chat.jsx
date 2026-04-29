@@ -323,7 +323,8 @@ const Chat = () => {
     try {
       console.log('🔌 Initializing socket connection to:', SOCKET_URL);
       newSocket = io(SOCKET_URL, {
-        transports: ['polling', 'websocket'],
+        path: '/ws-server',
+        transports: ['websocket'],
         reconnection: true,
         reconnectionAttempts: 10,
         reconnectionDelay: 2000,

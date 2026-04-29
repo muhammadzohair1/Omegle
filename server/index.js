@@ -20,7 +20,8 @@ const io = new Server(server, {
     methods: ['GET', 'POST'],
     credentials: true
   },
-  transports: ['polling', 'websocket'],
+  path: '/ws-server',
+  transports: ['websocket'],
   allowEIO3: true,
   pingTimeout: 60000,
   pingInterval: 25000,

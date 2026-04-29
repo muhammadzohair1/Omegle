@@ -658,16 +658,18 @@ const Chat = () => {
   };
 
   return (
-    <div className="chat-container h-[100dvh] w-full bg-obsidian text-slate-100 select-none touch-none overflow-hidden font-inter p-2 md:p-4">
+    <div className="chat-container h-[100dvh] w-full bg-obsidian text-slate-100 select-none touch-none overflow-hidden font-inter p-1 sm:p-2 md:p-4">
+
       {/* Background Ambience */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900/40 via-obsidian to-obsidian pointer-events-none"></div>
 
-      <div className="flex flex-col md:grid md:grid-cols-12 gap-2 md:gap-4 h-full max-w-[1600px] mx-auto relative z-10 pb-1 md:pb-0">
+      <div className="flex flex-col md:grid md:grid-cols-12 gap-1.5 md:gap-4 h-full max-w-[1600px] mx-auto relative z-10 pb-safe md:pb-0">
+
         
         {/* Left Sidebar: Info & Bento Modules (Hidden on mobile) */}
         <motion.div 
           initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="hidden md:flex md:col-span-3 flex-col gap-4 h-full"
+          className="hidden lg:flex md:col-span-3 flex-col gap-4 h-full"
         >
           {/* Profile Module */}
           <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-glass-inset flex flex-col gap-4 h-1/3">
@@ -751,7 +753,7 @@ const Chat = () => {
         {/* Center: Video Main Area (Bento Hero) */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.1 }}
-          className={`md:col-span-6 h-[45%] md:h-full bg-obsidian rounded-2xl overflow-hidden border ${chatState === 'connected' ? 'border-cyan-neon/30 shadow-neon-cyan' : 'border-white/10 shadow-glass-inset'} relative group transition-all duration-500`}
+          className={`lg:col-span-6 md:col-span-8 h-[50%] md:h-full bg-obsidian rounded-2xl overflow-hidden border ${chatState === 'connected' ? 'border-cyan-neon/30 shadow-neon-cyan' : 'border-white/10 shadow-glass-inset'} relative group transition-all duration-500`}
         >
           {/* Radiant light overlay removed as per user request to clear video feed */}
 
@@ -805,7 +807,7 @@ const Chat = () => {
           </div>
 
           {/* Local Video Overlay (Bento Sub-module) */}
-          <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 w-24 h-32 md:w-32 md:h-48 sm:w-44 sm:h-64 bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-20 group/local">
+          <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 w-20 h-28 sm:w-24 sm:h-32 md:w-32 md:h-48 lg:w-44 lg:h-64 bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-20 group/local">
             <div className="absolute inset-0 border border-white/10 rounded-2xl z-30 pointer-events-none"></div>
             {localStream ? (
               <>
@@ -881,7 +883,7 @@ const Chat = () => {
         {/* Right Panel: Chat Box (Bento Module) */}
         <motion.div 
           initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.2 }}
-          className="md:col-span-3 h-[55%] md:h-full bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-glass-inset flex flex-col overflow-hidden relative"
+          className="lg:col-span-3 md:col-span-4 h-[50%] md:h-full bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-glass-inset flex flex-col overflow-hidden relative"
         >
           <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
           

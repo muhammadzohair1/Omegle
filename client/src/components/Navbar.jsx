@@ -27,7 +27,7 @@ const Navbar = () => {
         <div className="navbar-container">
           <Link to="/chat" className="navbar-logo">
             <MessageSquare className="logo-icon" />
-            <span>SmartChat</span>
+            <span className="hidden sm:inline">SmartChat</span>
           </Link>
           
           <div className="navbar-links">

@@ -267,11 +267,15 @@ io.on('connection', (socket) => {
     // Keep alive signal received
   });
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+  socket.on('disconnect', (reason) => {
+    console.log(`🔌 User disconnected [${socket.id}]. Reason: ${reason}`);
     waitingQueue = waitingQueue.filter(u => u.socketId !== socket.id);
     handleDisconnectFromRoom(socket.id);
   });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 app.get('/', (req, res) => {

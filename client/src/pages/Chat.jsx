@@ -63,6 +63,9 @@ const Chat = () => {
   const [partnerUid, setPartnerUid] = useState(null);
   const [isBlurActive, setIsBlurActive] = useState(false);
   const [isModelLoading, setIsModelLoading] = useState(true);
+  const [debugLogs, setDebugLogs] = useState([]);
+  const [showDebug, setShowDebug] = useState(false);
+  const [networkHealth, setNetworkHealth] = useState('Checking...');
 
   const nsfwConsecutiveCountRef = useRef(0);
   const messagesEndRef = useRef(null);
@@ -318,10 +321,33 @@ const Chat = () => {
   }, [messages, partnerTyping]);
 
   useEffect(() => {
+    const checkNetwork = async () => {
+      try {
+        console.log('🔍 Performing Pre-flight Health Check...');
+        const res = await fetch(`${SOCKET_URL}/health`);
+        const data = await res.json();
+        setNetworkHealth(`Connected (Latency: ${res.status === 200 ? 'Low' : 'High'})`);
+        console.log('✅ Network Health Check Passed:', data);
+      } catch (err) {
+        setNetworkHealth(`FAILED: ${err.message}`);
+        console.error('❌ Pre-flight Health Check Failed:', err);
+        addDebugLog(`Network Block: ${err.message}`, 'error');
+      }
+    };
+    checkNetwork();
+  }, []);
+
+  const addDebugLog = (msg, type = 'info') => {
+    const log = { id: Date.now(), msg, type, time: new Date().toLocaleTimeString() };
+    setDebugLogs(prev => [log, ...prev].slice(0, 10));
+    console.log(`[DEBUG-${type.toUpperCase()}] ${msg}`);
+  };
+
+  useEffect(() => {
     let newSocket;
     let connectionTimeout;
     try {
-      console.log('🔌 Initializing socket connection to:', SOCKET_URL);
+      addDebugLog(`Initializing connection to ${SOCKET_URL}...`);
       newSocket = io(SOCKET_URL, {
         path: '/ws-server',
         transports: ['websocket'],
@@ -334,35 +360,35 @@ const Chat = () => {
         closeOnBeforeunload: false,
       });
 
-      // Manual Heartbeat to keep Railway proxy alive
-      const heartbeat = setInterval(() => {
-        if (newSocket.connected) {
-          newSocket.emit('heartbeat');
-        }
-      }, 25000);
+      newSocket.io.on("error", (err) => {
+        addDebugLog(`IO Error: ${err.message}`, 'error');
+      });
 
-      connectionTimeout = setTimeout(() => {
-        if (!newSocket.connected) {
-          console.error('❌ Socket connection timed out after 20s');
-          addSystemMessage('⚠️ Connection Timeout. The server might be sleeping or blocked by your network.');
-          setChatState('server_offline');
-        }
-      }, 20000);
+      newSocket.io.on("reconnect_attempt", (attempt) => {
+        addDebugLog(`Reconnecting (Attempt ${attempt})...`, 'warn');
+      });
 
       newSocket.on('connect', () => {
-        console.log('✅ Socket Connected! ID:', newSocket.id);
+        const transport = newSocket.io.engine.transport.name;
+        addDebugLog(`Connected! Transport: ${transport}`, 'success');
         clearTimeout(connectionTimeout);
         setChatState('idle');
       });
 
       newSocket.on('connect_error', (error) => {
-        console.warn('❌ Socket Connection Error:', error.message);
-        console.dir(error);
+        const details = {
+          message: error.message,
+          type: error.type,
+          description: error.description,
+          context: error.context
+        };
+        addDebugLog(`Handshake Failed: ${error.message} [Type: ${error.type}]`, 'error');
+        console.dir(details);
         addSystemMessage(`📶 Link Error: ${error.message}`);
       });
 
       newSocket.on('disconnect', (reason) => {
-        console.warn('🔌 Socket Disconnected:', reason);
+        addDebugLog(`Disconnected: ${reason}`, 'warn');
         if (reason === 'io server disconnect' || reason === 'transport close') {
           addSystemMessage('📡 Connection unstable. Re-linking...');
           newSocket.connect();
@@ -371,21 +397,20 @@ const Chat = () => {
 
       setSocket(newSocket);
     } catch (error) {
-      console.error('Socket initialization error:', error);
+      addDebugLog(`Initialization Error: ${error.message}`, 'error');
     }
 
-    // Auto-redirect disabled for debugging
-    const timeout = setTimeout(() => {
-      if (chatState === 'idle' && newSocket && !newSocket.connected) {
-        console.warn("REDIRECTING TO HOME. Reason: [Session lost on refresh or socket failed to connect - DISABLED FOR DEBUGGING]");
-        // navigate('/');
+    connectionTimeout = setTimeout(() => {
+      if (!newSocket.connected) {
+        addDebugLog('Socket connection timed out after 20s', 'error');
+        addSystemMessage('⚠️ Connection Timeout. Check your network.');
+        setChatState('server_offline');
       }
-    }, 2000);
+    }, 20000);
 
     return () => {
       if (newSocket) newSocket.disconnect();
-      clearTimeout(timeout);
-      clearInterval(heartbeat);
+      clearTimeout(connectionTimeout);
     };
   }, []);
 
@@ -1010,7 +1035,65 @@ const Chat = () => {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      {/* Custom Debug Overlay */}
+      <div className="fixed bottom-4 left-4 z-[9999] flex flex-col gap-2">
+        <button 
+          onClick={() => setShowDebug(!showDebug)}
+          className="bg-obsidian/80 backdrop-blur-md border border-white/10 p-2 rounded-full text-white/50 hover:text-white transition-all shadow-xl"
+          title="Toggle Connection Debugger"
+        >
+          <Activity className={showDebug ? "text-cyan-neon" : ""} size={20} />
+        </button>
+
+        <AnimatePresence>
+          {showDebug && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.9 }}
+              className="bg-obsidian/90 backdrop-blur-xl border border-white/10 p-4 rounded-2xl w-80 shadow-2xl overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-white/40">Link Telemetry</h4>
+                <div className={`h-2 w-2 rounded-full animate-pulse ${networkHealth.includes('Connected') ? 'bg-green-500' : 'bg-red-500'}`} />
+              </div>
+
+              <div className="space-y-3">
+                <div className="bg-white/5 p-2 rounded-lg">
+                  <p className="text-[10px] text-white/30 uppercase font-bold mb-1">Network Health</p>
+                  <p className="text-xs font-mono truncate">{networkHealth}</p>
+                </div>
+
+                <div className="bg-white/5 p-2 rounded-lg">
+                  <p className="text-[10px] text-white/30 uppercase font-bold mb-1">Active Engine</p>
+                  <p className="text-xs font-mono">
+                    {socket?.io?.engine?.transport?.name || 'Searching...'}
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-[10px] text-white/30 uppercase font-bold mb-1">Event Stream</p>
+                  <div className="max-h-32 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                    {debugLogs.length === 0 && <p className="text-[10px] text-white/20 italic">No events recorded.</p>}
+                    {debugLogs.map(log => (
+                      <div key={log.id} className="text-[9px] font-mono leading-tight border-l-2 border-white/5 pl-2 py-0.5">
+                        <span className="text-white/20">[{log.time}]</span>{" "}
+                        <span className={
+                          log.type === 'error' ? 'text-red-400' : 
+                          log.type === 'success' ? 'text-cyan-neon' : 
+                          log.type === 'warn' ? 'text-yellow-400' : 'text-white/60'
+                        }>
+                          {log.msg}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };

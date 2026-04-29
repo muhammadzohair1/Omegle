@@ -328,8 +328,16 @@ const Chat = () => {
         reconnectionDelay: 2000,
         reconnectionDelayMax: 10000,
         withCredentials: true,
-        timeout: 20000
+        timeout: 20000,
+        closeOnBeforeunload: false,
       });
+
+      // Manual Heartbeat to keep Railway proxy alive
+      const heartbeat = setInterval(() => {
+        if (newSocket.connected) {
+          newSocket.emit('heartbeat');
+        }
+      }, 25000);
 
       connectionTimeout = setTimeout(() => {
         if (!newSocket.connected) {
@@ -375,6 +383,7 @@ const Chat = () => {
     return () => {
       if (newSocket) newSocket.disconnect();
       clearTimeout(timeout);
+      clearInterval(heartbeat);
     };
   }, []);
 

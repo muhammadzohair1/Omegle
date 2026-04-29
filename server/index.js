@@ -262,6 +262,10 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('heartbeat', () => {
+    // Keep alive signal received
+  });
+
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
     waitingQueue = waitingQueue.filter(u => u.socketId !== socket.id);

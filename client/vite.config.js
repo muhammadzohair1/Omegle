@@ -11,6 +11,13 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB
         globIgnores: ['model/**'],
+        navigateFallbackDenylist: [/^\/socket.io/],
+        runtimeCaching: [
+          {
+            urlPattern: /^\/socket.io/,
+            handler: 'NetworkOnly',
+          }
+        ]
       },
       includeAssets: ['favicon.svg', 'pwa-icon-512.png'],
       manifest: {

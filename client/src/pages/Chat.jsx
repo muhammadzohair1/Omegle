@@ -296,12 +296,11 @@ const Chat = () => {
       }, 3000);
       }
     } else {
-      console.log('NSFW Loop conditions not met:', {
-        chatState,
-        hasRemoteStream: !!remoteStream,
-        hasModel: !!nsfwModel,
-        hasRef: !!remoteVideoRef.current
-      });
+      // Only log if conditions are partially met to reduce console noise
+      if (chatState === 'connected' && remoteStream && !nsfwModel) {
+        console.log('🤖 AI Moderation: Waiting for NSFW model load...');
+      }
+      return;
     }
 
     // Cleanup on disconnect or unmount to save CPU
@@ -727,9 +726,8 @@ const Chat = () => {
           initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.1 }}
           className={`md:col-span-6 h-[45%] md:h-full bg-obsidian rounded-2xl overflow-hidden border ${chatState === 'connected' ? 'border-cyan-neon/30 shadow-neon-cyan' : 'border-white/10 shadow-glass-inset'} relative group transition-all duration-500`}
         >
-          {chatState === 'connected' && (
-             <div className="absolute inset-0 p-[1px] bg-gradient-to-r from-cyan-neon via-purple-plasma to-cyan-neon animate-running-light rounded-2xl pointer-events-none z-30 opacity-50"></div>
-          )}
+          {/* Radiant light overlay removed as per user request to clear video feed */}
+
           
           <div className="absolute inset-[1px] rounded-[calc(1.5rem-1px)] overflow-hidden bg-obsidian z-0">
             {remoteStream ? (

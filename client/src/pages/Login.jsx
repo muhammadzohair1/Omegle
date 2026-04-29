@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { auth, provider } from '../firebase';
+import { auth, provider, browserPopupRedirectResolver } from '../firebase';
 import { signInWithPopup } from 'firebase/auth';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { MessageSquare } from 'lucide-react';
@@ -16,7 +16,8 @@ const Login = () => {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      // Use the resolver to handle COOP/COEP isolation
+      await signInWithPopup(auth, provider, browserPopupRedirectResolver);
       navigate('/chat');
     } catch (error) {
       console.error('Error signing in with Google:', error);

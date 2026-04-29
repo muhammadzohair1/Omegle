@@ -843,38 +843,39 @@ const Chat = () => {
           </div>
 
           {/* Floating Action Controls Dock */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl z-20 transition-transform duration-300 hover:scale-105">
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleVideo} className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${isVideoOff ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
-              {isVideoOff ? <VideoOff size={18} /> : <Video size={18} />}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2 md:gap-3 p-1.5 sm:p-2 md:p-3 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl z-20 transition-transform duration-300 hover:scale-105 max-w-[95%] overflow-x-auto no-scrollbar">
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleVideo} className={`min-w-[36px] w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${isVideoOff ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
+              {isVideoOff ? <VideoOff size={16} /> : <Video size={16} />}
             </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleMute} className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${isMuted ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
-              {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleMute} className={`min-w-[36px] w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${isMuted ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
+              {isMuted ? <MicOff size={16} /> : <Mic size={16} />}
             </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleBlur} className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${isBlurActive ? 'bg-purple-plasma/20 text-purple-plasma border border-purple-plasma/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
-              <UserX size={18} />
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleBlur} className={`min-w-[36px] w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${isBlurActive ? 'bg-purple-plasma/20 text-purple-plasma border border-purple-plasma/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
+              <UserX size={16} />
             </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleCamera} className="w-10 h-10 md:hidden rounded-full flex items-center justify-center bg-white/10 text-white border border-white/10 hover:bg-white/20">
-              <SwitchCamera size={18} />
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleCamera} className="min-w-[36px] w-9 h-9 sm:w-10 sm:h-10 md:hidden rounded-full flex items-center justify-center bg-white/10 text-white border border-white/10 hover:bg-white/20">
+              <SwitchCamera size={16} />
             </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleFlashlight} className={`w-10 h-10 md:hidden rounded-full flex items-center justify-center transition-colors ${isFlashlightOn ? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
-              {isFlashlightOn ? <Flashlight size={18} /> : <FlashlightOff size={18} />}
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleFlashlight} className={`min-w-[36px] w-9 h-9 sm:w-10 sm:h-10 md:hidden rounded-full flex items-center justify-center transition-colors ${isFlashlightOn ? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30' : 'bg-white/10 text-white border border-white/10 hover:bg-white/20'}`}>
+              {isFlashlightOn ? <Flashlight size={16} /> : <FlashlightOff size={16} />}
             </motion.button>
 
-            <div className="w-px h-6 bg-white/10 mx-1 hidden sm:block"></div>
+            <div className="w-px h-6 bg-white/10 mx-0.5 hidden sm:block"></div>
 
             {chatState === 'connected' ? (
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleSkip} className="h-10 md:h-12 px-4 md:px-6 bg-red-500 hover:bg-red-400 text-white font-bold rounded-full shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all flex items-center gap-2 text-xs md:text-sm tracking-wide">
-                <RefreshCw size={14} className={isSkipping ? 'animate-spin' : ''} /> SKIP
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleSkip} className="h-9 sm:h-10 md:h-12 px-3 sm:px-4 md:px-6 bg-red-500 hover:bg-red-400 text-white font-bold rounded-full shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all flex items-center gap-1.5 text-[10px] sm:text-xs md:text-sm tracking-wide">
+                <RefreshCw size={12} className={isSkipping ? 'animate-spin' : ''} /> SKIP
               </motion.button>
             ) : (
               <motion.button 
                 whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} 
                 onClick={chatState === 'server_offline' ? () => socket?.connect() : startLooking} 
                 disabled={chatState === 'looking'} 
-                className="h-10 md:h-12 px-4 md:px-6 bg-cyan-neon hover:bg-cyan-400 text-obsidian font-bold rounded-full shadow-neon-cyan transition-all flex items-center gap-2 disabled:opacity-50 text-xs md:text-sm tracking-wide"
+                className="h-9 sm:h-10 md:h-12 px-3 sm:px-4 md:px-6 bg-cyan-neon hover:bg-cyan-400 text-obsidian font-bold rounded-full shadow-neon-cyan transition-all flex items-center gap-1.5 disabled:opacity-50 text-[10px] sm:text-xs md:text-sm tracking-wide"
               >
-                {chatState === 'looking' ? <Loader className="animate-spin" size={14} /> : chatState === 'server_offline' ? <RefreshCw size={14} /> : <Activity size={14} />}
-                {chatState === 'looking' ? 'LINKING' : chatState === 'server_offline' ? 'RETRY LINK' : 'START'}
+                {chatState === 'looking' ? <Loader className="animate-spin" size={12} /> : chatState === 'server_offline' ? <RefreshCw size={12} /> : <Activity size={12} />}
+                <span className="hidden xxs:inline">{chatState === 'looking' ? 'LINKING' : chatState === 'server_offline' ? 'RETRY' : 'START'}</span>
+                <span className="xxs:hidden">{chatState === 'looking' ? '...' : chatState === 'server_offline' ? 'RETRY' : 'GO'}</span>
               </motion.button>
             )}
           </div>

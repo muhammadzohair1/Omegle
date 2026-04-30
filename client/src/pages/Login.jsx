@@ -1,28 +1,17 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { auth, provider } from '../firebase';
-import { signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { signInWithPopup } from 'firebase/auth'; // Redirect hata kar Popup import kiya
 import { useNavigate, Navigate } from 'react-router-dom';
-import { MessageSquare, Loader } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import './Login.css';
 
 const Login = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Capture the result when the user is redirected back to the app
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          console.log('✅ Redirect Login Successful');
-          navigate('/chat');
-        }
-      })
-      .catch((error) => {
-        console.error('Error with redirect result:', error);
-      });
-  }, [navigate]);
+  // Redirect result check karne ki ab zaroorat nahi hai popup ke saath
+  // Magar humne currentUser ka logic rakha hai redirection handle karne ke liye
 
   if (currentUser) {
     return <Navigate to="/chat" />;
@@ -30,10 +19,14 @@ const Login = () => {
 
   const handleGoogleSignIn = async () => {
     try {
-      // Switch to Redirect to bypass COOP/COEP popup blocks
-      await signInWithRedirect(auth, provider);
+      // Vercel par stable chalne ke liye Popup method
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        console.log('✅ Login Successful');
+        navigate('/chat');
+      }
     } catch (error) {
-      console.error('Error initiating redirect sign in:', error);
+      console.error('Error during Google Sign In:', error);
     }
   };
 

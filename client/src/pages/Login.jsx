@@ -1,28 +1,14 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { auth, provider } from '../firebase';
-import { signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { signInWithPopup } from 'firebase/auth';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { MessageSquare, Loader } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import './Login.css';
 
 const Login = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Capture the result when the user is redirected back to the app
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          console.log('✅ Redirect Login Successful');
-          navigate('/chat');
-        }
-      })
-      .catch((error) => {
-        console.error('Error with redirect result:', error);
-      });
-  }, [navigate]);
 
   if (currentUser) {
     return <Navigate to="/chat" />;
@@ -30,10 +16,15 @@ const Login = () => {
 
   const handleGoogleSignIn = async () => {
     try {
-      // Switch to Redirect to bypass COOP/COEP popup blocks
-      await signInWithRedirect(auth, provider);
+      // Use signInWithPopup to avoid Vercel COOP/redirect issues
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        console.log('✅ Popup Login Successful');
+        navigate('/chat');
+      }
     } catch (error) {
-      console.error('Error initiating redirect sign in:', error);
+      console.error('Error during popup sign in:', error);
+      // Optional: Add user-facing error message here
     }
   };
 

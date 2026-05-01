@@ -9,6 +9,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [userInterests, setUserInterests] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -43,16 +44,20 @@ export const AuthProvider = ({ children }) => {
         }
 
         setCurrentUser(user);
-        // Fetch user interests
+        // Fetch full user profile
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setUserInterests(docSnap.data().interests);
+          const data = docSnap.data();
+          setUserProfile(data);
+          setUserInterests(data.interests);
         } else {
+          setUserProfile(null);
           setUserInterests(null);
         }
       } else {
         setCurrentUser(null);
+        setUserProfile(null);
         setUserInterests(null);
       }
       setLoading(false);
@@ -61,20 +66,24 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
-  const refreshInterests = async () => {
+  const refreshProfile = async () => {
     if (currentUser) {
       const docRef = doc(db, "users", currentUser.uid);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setUserInterests(docSnap.data().interests);
+        const data = docSnap.data();
+        setUserProfile(data);
+        setUserInterests(data.interests);
       }
     }
   };
 
   const value = {
     currentUser,
+    userProfile,
     userInterests,
-    refreshInterests
+    refreshProfile,
+    refreshInterests: refreshProfile // For backward compatibility
   };
 
   return (

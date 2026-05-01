@@ -7,7 +7,7 @@ import { LogOut, Settings, MessageSquare, User } from 'lucide-react';
 import './Navbar.css';
 
 const Navbar = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, userProfile } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -31,14 +31,14 @@ const Navbar = () => {
           </Link>
           
           <div className="navbar-links">
-            <div className="user-profile-badge">
-              {currentUser.photoURL ? (
-                <img src={currentUser.photoURL} alt="Profile" className="profile-pic-mini" />
+            <Link to="/profile" className="user-profile-badge">
+              {userProfile?.photoURL || currentUser.photoURL ? (
+                <img src={userProfile?.photoURL || currentUser.photoURL} alt="Profile" className="profile-pic-mini" />
               ) : (
                 <div className="profile-placeholder"><User size={16} /></div>
               )}
-              <span className="badge-name">{currentUser.displayName || 'User'}</span>
-            </div>
+              <span className="badge-name">{userProfile?.displayName || currentUser.displayName || 'User'}</span>
+            </Link>
 
             <Link to="/interests" className="nav-action-btn btn-interests" title="Edit Interests">
               <Settings size={16} />

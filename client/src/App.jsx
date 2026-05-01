@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
+import Profile from './pages/Profile';
 import InterestSelector from './pages/InterestSelector';
 import Landing from './pages/Landing';
 import Chat from './pages/Chat';
@@ -40,6 +41,12 @@ function App() {
             <Route path="/interests" element={
               <ProtectedRoute>
                 <InterestSelector />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             } />
             

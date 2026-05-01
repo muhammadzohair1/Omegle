@@ -24,7 +24,7 @@ const REPORT_REASONS = [
 ];
 
 const Chat = () => {
-  const { currentUser, userInterests } = useAuth();
+  const { currentUser, userProfile, userInterests } = useAuth();
   const navigate = useNavigate();
   const [socket, setSocket] = useState(null);
 
@@ -704,7 +704,7 @@ const Chat = () => {
               User Identity
             </h3>
             <div className="user-profile-mini">
-              <p className="text-xl font-bold tracking-tight">{currentUser?.displayName}</p>
+              <p className="text-xl font-bold tracking-tight">{userProfile?.displayName || currentUser?.displayName}</p>
               <p className="text-xs text-slate-500 font-mono tracking-tighter truncate">{currentUser?.email}</p>
             </div>
             

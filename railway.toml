@@ -1,0 +1,10 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm install && cd server && npm install"
+
+[deploy]
+startCommand = "cd server && node index.js"
+healthCheckPath = "/health"
+healthCheckTimeout = 100
+restartPolicyType = "ON_FAILURE"
+maxRestartRetries = 10

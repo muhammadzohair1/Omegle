@@ -24,7 +24,7 @@ import AuthError from '../components/AuthError';
 import { mapAuthCodeToMessage } from '../utils/authUtils';
 import './Login.css';
 
-// Move Sub-components OUTSIDE to prevent focus loss on re-render
+// STABLE SUB-COMPONENTS (DEFINED OUTSIDE)
 const MagneticButton = ({ children, className, onClick, disabled, type = "button", whileTap = { scale: 0.96 } }) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -65,6 +65,7 @@ const Login = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   
+  // Auth Modes: 'login', 'signup', 'forgot', 'phone', 'mfa'
   const [mode, setMode] = useState('login'); 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -72,9 +73,11 @@ const Login = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [verificationId, setVerificationId] = useState(null);
+  
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  
   const [mfaResolver, setMfaResolver] = useState(null);
   const [mfaInfo, setMfaInfo] = useState(null);
 
@@ -174,7 +177,7 @@ const Login = () => {
     setLoading(true);
     try {
       await sendPasswordResetEmail(auth, email);
-      setSuccessMsg('Password reset link sent to your email!');
+      setSuccessMsg('Reset link sent! Check your inbox.');
       setTimeout(() => setMode('login'), 3000);
     } catch (err) {
       handleAuthError(err);
@@ -249,127 +252,6 @@ const Login = () => {
     }
   };
 
-  const renderForm = () => {
-    switch (mode) {
-      case 'signup':
-        return (
-          <form onSubmit={handleEmailAuth} className="auth-form">
-            <motion.div variants={itemVariants} className="input-group">
-              <User size={20} />
-              <input type="text" placeholder="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
-            </motion.div>
-            <motion.div variants={itemVariants} className="input-group">
-              <Mail size={20} />
-              <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </motion.div>
-            <motion.div variants={itemVariants} className="input-group">
-              <Lock size={20} />
-              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            </motion.div>
-            <motion.div variants={itemVariants}>
-              <MagneticButton type="submit" className="primary-btn" disabled={loading}>
-                <AnimatePresence mode="wait">
-                  {loading ? (
-                    <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                      <RefreshCw className="loading-spinner" />
-                    </motion.div>
-                  ) : (
-                    <motion.div key="text" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                      Create Account <UserPlus size={20} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </MagneticButton>
-            </motion.div>
-          </form>
-        );
-      case 'forgot':
-        return (
-          <form onSubmit={handleForgotPassword} className="auth-form">
-            <motion.p variants={itemVariants} className="text-slate-400 text-sm mb-4">Enter your email for a reset link.</motion.p>
-            <motion.div variants={itemVariants} className="input-group">
-              <Mail size={20} />
-              <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </motion.div>
-            <motion.div variants={itemVariants}>
-              <MagneticButton type="submit" className="primary-btn" disabled={loading}>
-                {loading ? <RefreshCw className="loading-spinner" /> : <span className="flex items-center gap-2">Send Reset Link <Key size={20} /></span>}
-              </MagneticButton>
-            </motion.div>
-          </form>
-        );
-      case 'phone':
-        return (
-          <form onSubmit={verificationId ? verifyOtp : handlePhoneSignIn} className="auth-form">
-            <motion.div variants={itemVariants} className="input-group">
-              {verificationId ? <Key size={20} /> : <Phone size={20} />}
-              <input 
-                type={verificationId ? "text" : "tel"} 
-                placeholder={verificationId ? "Enter OTP" : "+1234567890"} 
-                value={verificationId ? otp : phoneNumber} 
-                onChange={(e) => verificationId ? setOtp(e.target.value) : setPhoneNumber(e.target.value)} 
-                required 
-              />
-            </motion.div>
-            <div id="recaptcha-container"></div>
-            <motion.div variants={itemVariants}>
-              <MagneticButton type="submit" className="primary-btn" disabled={loading}>
-                {loading ? <RefreshCw className="loading-spinner" /> : <span className="flex items-center gap-2">{verificationId ? 'Verify OTP' : 'Send OTP'} <Smartphone size={20} /></span>}
-              </MagneticButton>
-            </motion.div>
-          </form>
-        );
-      case 'mfa':
-        return (
-          <form onSubmit={verifyMfa} className="auth-form">
-            <p className="text-cyan-neon text-sm font-bold mb-4">Two-Step Verification Required</p>
-            <p className="text-slate-400 text-xs mb-4">Code sent to device ending in {mfaInfo?.phoneNumber?.slice(-4)}</p>
-            <motion.div variants={itemVariants} className="input-group">
-              <ShieldCheck size={20} />
-              <input type="text" placeholder="Verification Code" value={otp} onChange={(e) => setOtp(e.target.value)} required />
-            </motion.div>
-            <div id="recaptcha-container"></div>
-            <motion.div variants={itemVariants}>
-              <MagneticButton type="submit" className="primary-btn" disabled={loading}>
-                {loading ? <RefreshCw className="loading-spinner" /> : <span className="flex items-center gap-2">Confirm Identity <Lock size={20} /></span>}
-              </MagneticButton>
-            </motion.div>
-          </form>
-        );
-      default: // login
-        return (
-          <form onSubmit={handleEmailAuth} className="auth-form">
-            <motion.div variants={itemVariants} className="input-group">
-              <Mail size={20} />
-              <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </motion.div>
-            <motion.div variants={itemVariants} className="input-group">
-              <Lock size={20} />
-              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            </motion.div>
-            <motion.div variants={itemVariants} className="flex justify-end">
-              <button type="button" onClick={() => setMode('forgot')} className="text-xs text-slate-500 hover:text-[#00ffff] transition-colors mb-2">Forgot Password?</button>
-            </motion.div>
-            <motion.div variants={itemVariants}>
-              <MagneticButton type="submit" className="primary-btn" disabled={loading}>
-                <AnimatePresence mode="wait">
-                  {loading ? (
-                    <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                      <RefreshCw className="loading-spinner" />
-                    </motion.div>
-                  ) : (
-                    <motion.div key="text" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                      Sign In <LogIn size={20} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </MagneticButton>
-            </motion.div>
-          </form>
-        );
-    }
-  };
-
   return (
     <div className="login-container relative">
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none"></div>
@@ -383,8 +265,13 @@ const Login = () => {
       >
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00ffff] to-transparent opacity-20"></div>
         
-        {mode !== 'login' && mode !== 'signup' && (
-          <motion.button variants={itemVariants} onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); setVerificationId(null); }} className="absolute top-8 left-8 text-slate-500 hover:text-white transition-colors">
+        {/* Navigation / Back Button */}
+        {(mode !== 'login' && mode !== 'signup') && (
+          <motion.button 
+            variants={itemVariants} 
+            onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); setVerificationId(null); }} 
+            className="absolute top-8 left-8 text-slate-500 hover:text-white transition-colors"
+          >
             <ChevronLeft size={24} />
           </motion.button>
         )}
@@ -407,19 +294,136 @@ const Login = () => {
           </motion.p>
         )}
 
+        {/* STABLE CONDITIONAL RENDERING BLOCK */}
         <AnimatePresence mode="wait">
-          <motion.div 
-            key={mode} 
-            layout
-            initial={{ opacity: 0, x: -10 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            exit={{ opacity: 0, x: 10 }} 
-            transition={springConfig}
-          >
-            {renderForm()}
-          </motion.div>
+          {mode === 'login' && (
+            <motion.form 
+              key="login-form"
+              onSubmit={handleEmailAuth}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={springConfig}
+              className="auth-form"
+            >
+              <div className="input-group">
+                <Mail size={20} />
+                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              </div>
+              <div className="input-group">
+                <Lock size={20} />
+                <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              </div>
+              <div className="flex justify-end">
+                <button type="button" onClick={() => setMode('forgot')} className="text-xs text-slate-500 hover:text-[#00ffff] transition-colors mb-2">Forgot Password?</button>
+              </div>
+              <MagneticButton type="submit" className="primary-btn" disabled={loading}>
+                {loading ? <RefreshCw className="loading-spinner" /> : <span className="flex items-center gap-2">Sign In <LogIn size={20} /></span>}
+              </MagneticButton>
+            </motion.form>
+          )}
+
+          {mode === 'signup' && (
+            <motion.form 
+              key="signup-form"
+              onSubmit={handleEmailAuth}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={springConfig}
+              className="auth-form"
+            >
+              <div className="input-group">
+                <User size={20} />
+                <input type="text" placeholder="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
+              </div>
+              <div className="input-group">
+                <Mail size={20} />
+                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              </div>
+              <div className="input-group">
+                <Lock size={20} />
+                <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              </div>
+              <MagneticButton type="submit" className="primary-btn" disabled={loading}>
+                {loading ? <RefreshCw className="loading-spinner" /> : <span className="flex items-center gap-2">Create Account <UserPlus size={20} /></span>}
+              </MagneticButton>
+            </motion.form>
+          )}
+
+          {mode === 'forgot' && (
+            <motion.form 
+              key="forgot-form"
+              onSubmit={handleForgotPassword}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={springConfig}
+              className="auth-form"
+            >
+              <p className="text-slate-400 text-sm mb-4">Enter your email for a reset link.</p>
+              <div className="input-group">
+                <Mail size={20} />
+                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              </div>
+              <MagneticButton type="submit" className="primary-btn" disabled={loading}>
+                {loading ? <RefreshCw className="loading-spinner" /> : <span className="flex items-center gap-2">Send Reset Link <Key size={20} /></span>}
+              </MagneticButton>
+            </motion.form>
+          )}
+
+          {mode === 'phone' && (
+            <motion.form 
+              key="phone-form"
+              onSubmit={verificationId ? verifyOtp : handlePhoneSignIn}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={springConfig}
+              className="auth-form"
+            >
+              <div className="input-group">
+                {verificationId ? <Key size={20} /> : <Phone size={20} />}
+                <input 
+                  type={verificationId ? "text" : "tel"} 
+                  placeholder={verificationId ? "Enter OTP" : "+1234567890"} 
+                  value={verificationId ? otp : phoneNumber} 
+                  onChange={(e) => verificationId ? setOtp(e.target.value) : setPhoneNumber(e.target.value)} 
+                  required 
+                />
+              </div>
+              <div id="recaptcha-container"></div>
+              <MagneticButton type="submit" className="primary-btn" disabled={loading}>
+                {loading ? <RefreshCw className="loading-spinner" /> : <span className="flex items-center gap-2">{verificationId ? 'Verify OTP' : 'Send OTP'} <Smartphone size={20} /></span>}
+              </MagneticButton>
+            </motion.form>
+          )}
+
+          {mode === 'mfa' && (
+            <motion.form 
+              key="mfa-form"
+              onSubmit={verifyMfa}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={springConfig}
+              className="auth-form"
+            >
+              <p className="text-cyan-neon text-sm font-bold mb-4">Two-Step Verification Required</p>
+              <p className="text-slate-400 text-xs mb-4">Code sent to device ending in {mfaInfo?.phoneNumber?.slice(-4)}</p>
+              <div className="input-group">
+                <ShieldCheck size={20} />
+                <input type="text" placeholder="Verification Code" value={otp} onChange={(e) => setOtp(e.target.value)} required />
+              </div>
+              <div id="recaptcha-container"></div>
+              <MagneticButton type="submit" className="primary-btn" disabled={loading}>
+                {loading ? <RefreshCw className="loading-spinner" /> : <span className="flex items-center gap-2">Confirm Identity <Lock size={20} /></span>}
+              </MagneticButton>
+            </motion.form>
+          )}
         </AnimatePresence>
 
+        {/* SOCIAL BUTTONS / FOOTER */}
         {mode === 'login' && (
           <motion.div variants={itemVariants} layout>
             <div className="divider"><span>OR</span></div>
@@ -438,7 +442,7 @@ const Login = () => {
 
         <motion.p variants={itemVariants} layout className="toggle-auth">
           {mode === 'signup' ? 'Registered already?' : "New identity required?"}{' '}
-          <button onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setError(''); }} className="toggle-btn">
+          <button onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setError(''); setSuccessMsg(''); }} className="toggle-btn">
             {mode === 'signup' ? 'Access Portal' : 'Initialize Account'}
           </button>
         </motion.p>

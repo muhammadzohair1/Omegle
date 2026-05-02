@@ -3,8 +3,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, #121214 0%, #0A0A0C 100%);
+  background: radial-gradient(circle at center, #0f0f11 0%, #050505 100%);
   padding: 20px;
+  overflow: hidden;
 }
 
 .login-card {
@@ -12,29 +13,22 @@
   width: 100%;
   padding: 48px;
   text-align: center;
-  border: 1px solid rgba(0, 255, 255, 0.1);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
-  animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1), neon-glow 4s ease-in-out infinite;
+  background: rgba(26, 26, 26, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 24px;
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.15), 0 0 15px rgba(0, 255, 255, 0.3);
+  position: relative;
 }
 
-@keyframes neon-glow {
-  0%, 100% { 
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1), 0 0 5px rgba(0, 255, 255, 0.05); 
-    border-color: rgba(0, 255, 255, 0.1); 
-  }
-  50% { 
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3), 0 0 10px rgba(0, 255, 255, 0.15); 
-    border-color: rgba(0, 255, 255, 0.3); 
-  }
-}
-
-/* Fix Autofill White Background */
+/* Fix Autofill CSS */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus {
-  -webkit-text-fill-color: white;
-  -webkit-box-shadow: 0 0 0px 1000px #1a1a1a inset;
+  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0px 1000px #1a1a1a inset !important;
   transition: background-color 5000s ease-in-out 0s;
+  caret-color: white;
 }
 
 .brand {
@@ -42,71 +36,70 @@ input:-webkit-autofill:focus {
 }
 
 .brand-icon {
-  color: var(--accent-blue);
-  margin-bottom: 24px;
-  filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.4));
+  color: #00ffff;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
 }
 
 .brand h1 {
-  font-size: 2.5rem;
-  font-weight: 900;
-  letter-spacing: -0.05em;
-  margin-bottom: 8px;
-  background: linear-gradient(to bottom, #FFF, #A1A1AA);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: white;
+  margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .brand p {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 500;
+  color: #00ffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-top: 4px;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 24px;
 }
 
 .input-group {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
+  background: #1a1a1a;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 0 16px;
-  height: 52px;
-  transition: all 0.3s ease;
-  color: #a1a1aa;
+  height: 54px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  color: #888;
 }
 
 .input-group:focus-within {
-  border-color: var(--accent-blue);
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+  border-color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+  color: #00ffff;
 }
 
 .input-group input {
-  background: none !important;
+  background: transparent !important;
   border: none;
   color: white;
   width: 100%;
   height: 100%;
   padding-left: 12px;
-  font-size: 0.95rem;
+  font-size: 1rem;
   outline: none;
 }
 
 .input-group input::placeholder {
-  color: #52525b;
+  color: #555;
 }
 
 .primary-btn {
-  height: 52px;
-  background: var(--accent-blue);
+  height: 54px;
+  background: #00ffff;
   color: #000;
   border: none;
   border-radius: 12px;
@@ -116,81 +109,20 @@ input:-webkit-autofill:focus {
   justify-content: center;
   gap: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 1rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.primary-btn:hover:not(:disabled) {
-  box-shadow: 0 8px 25px rgba(0, 255, 255, 0.4);
-  filter: brightness(1.1);
-}
-
-.primary-btn:active:not(:disabled) {
-  transform: scale(0.98);
+  margin-top: 10px;
+  width: 100%;
 }
 
 .primary-btn:disabled {
-  opacity: 0.7;
+  background: #222;
+  color: #555;
   cursor: not-allowed;
-  background: #27272a;
-  color: #52525b;
-}
-
-.divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 24px 0;
-  color: #52525b;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.divider span {
-  padding: 0 10px;
-}
-
-.toggle-auth {
-  font-size: 0.875rem;
-  color: #a1a1aa;
-  margin-top: 16px;
-}
-
-.toggle-btn {
-  background: none;
-  border: none;
-  color: var(--accent-blue);
-  font-weight: 700;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 4px;
-}
-
-.toggle-btn:hover {
-  text-decoration: underline;
-  text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
-}
-
-.error-text {
-  color: #ef4444;
-  font-size: 0.8rem;
-  font-weight: 500;
-  margin-top: -8px;
-  text-align: left;
 }
 
 .social-btn {
   flex: 1;
-  height: 48px;
+  height: 50px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -199,19 +131,9 @@ input:-webkit-autofill:focus {
   justify-content: center;
   gap: 10px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  color: #a1a1aa;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.social-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: white;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: #ccc;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .social-btn img {
@@ -219,3 +141,55 @@ input:-webkit-autofill:focus {
   height: 18px;
 }
 
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+  color: #444;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.divider::before, .divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.divider span {
+  padding: 0 12px;
+}
+
+.toggle-auth {
+  margin-top: 24px;
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #00ffff;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+}
+
+.toggle-btn:hover {
+  text-decoration: underline;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.error-border {
+  border-color: #ff4444 !important;
+}

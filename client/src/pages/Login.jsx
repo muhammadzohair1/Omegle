@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { auth, provider, db } from '../firebase';
 import { 
@@ -28,7 +28,6 @@ const Login = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   
-  // Auth Modes: 'login', 'signup', 'forgot', 'phone', 'mfa'
   const [mode, setMode] = useState('login'); 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,21 +35,15 @@ const Login = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [verificationId, setVerificationId] = useState(null);
-  
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
-  
-  // MFA State
   const [mfaResolver, setMfaResolver] = useState(null);
   const [mfaInfo, setMfaInfo] = useState(null);
 
-  const recaptchaRef = useRef(null);
   const recaptchaVerifier = useRef(null);
 
-  if (currentUser) {
-    return <Navigate to="/interests" />;
-  }
+  if (currentUser) return <Navigate to="/interests" />;
 
   const handleAuthError = (err) => {
     console.error('Auth Error:', err);
@@ -141,8 +134,7 @@ const Login = () => {
   const initRecaptcha = () => {
     if (!recaptchaVerifier.current) {
       recaptchaVerifier.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible',
-        callback: () => console.log('Recaptcha resolved')
+        size: 'invisible'
       });
     }
   };
@@ -182,10 +174,7 @@ const Login = () => {
   const sendMfaCode = async (resolver) => {
     try {
       initRecaptcha();
-      const phoneInfoOptions = {
-        multiFactorHint: resolver.hints[0],
-        session: resolver.session
-      };
+      const phoneInfoOptions = { multiFactorHint: resolver.hints[0], session: resolver.session };
       const phoneAuthProvider = new PhoneAuthProvider(auth);
       const mfaVerificationId = await phoneAuthProvider.verifyPhoneNumber(phoneInfoOptions, recaptchaVerifier.current);
       setVerificationId(mfaVerificationId);
@@ -211,30 +200,41 @@ const Login = () => {
   };
 
   const renderForm = () => {
+    const commonBtnProps = {
+      whileTap: { scale: 0.96 },
+      type: "submit",
+      className: "primary-btn",
+      disabled: loading
+    };
+
     switch (mode) {
       case 'signup':
         return (
           <form onSubmit={handleEmailAuth} className="auth-form">
-            <div className={`input-group ${error && !displayName ? 'error-border' : ''}`}>
+            <div className="input-group">
               <User size={20} />
               <input type="text" placeholder="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
             </div>
-            <div className={`input-group ${error && !email ? 'error-border' : ''}`}>
+            <div className="input-group">
               <Mail size={20} />
               <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-            <div className={`input-group ${error ? 'error-border' : ''}`}>
+            <div className="input-group">
               <Lock size={20} />
               <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-            <motion.button 
-              whileTap={{ scale: 0.95 }}
-              type="submit" 
-              className="primary-btn" 
-              disabled={loading}
-            >
-              {loading ? <RefreshCw className="animate-spin" /> : 'Create Account'}
-              <UserPlus size={20} />
+            <motion.button {...commonBtnProps}>
+              <AnimatePresence mode="wait">
+                {loading ? (
+                  <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <RefreshCw className="loading-spinner" />
+                  </motion.div>
+                ) : (
+                  <motion.div key="text" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                    Create Account <UserPlus size={20} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.button>
           </form>
         );
@@ -246,14 +246,8 @@ const Login = () => {
               <Mail size={20} />
               <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-            <motion.button 
-              whileTap={{ scale: 0.95 }}
-              type="submit" 
-              className="primary-btn" 
-              disabled={loading}
-            >
-              {loading ? <RefreshCw className="animate-spin" /> : 'Send Reset Link'}
-              <Key size={20} />
+            <motion.button {...commonBtnProps}>
+              {loading ? <RefreshCw className="loading-spinner" /> : <span className="flex items-center gap-2">Send Reset Link <Key size={20} /></span>}
             </motion.button>
           </form>
         );
@@ -271,14 +265,8 @@ const Login = () => {
               />
             </div>
             <div id="recaptcha-container"></div>
-            <motion.button 
-              whileTap={{ scale: 0.95 }}
-              type="submit" 
-              className="primary-btn" 
-              disabled={loading}
-            >
-              {loading ? <RefreshCw className="animate-spin" /> : (verificationId ? 'Verify OTP' : 'Send OTP')}
-              <Smartphone size={20} />
+            <motion.button {...commonBtnProps}>
+              {loading ? <RefreshCw className="loading-spinner" /> : <span className="flex items-center gap-2">{verificationId ? 'Verify OTP' : 'Send OTP'} <Smartphone size={20} /></span>}
             </motion.button>
           </form>
         );
@@ -286,45 +274,43 @@ const Login = () => {
         return (
           <form onSubmit={verifyMfa} className="auth-form">
             <p className="text-cyan-neon text-sm font-bold mb-4">Two-Step Verification Required</p>
-            <p className="text-slate-400 text-xs mb-4">We've sent a code to your registered device ending in {mfaInfo?.phoneNumber?.slice(-4)}</p>
+            <p className="text-slate-400 text-xs mb-4">Code sent to device ending in {mfaInfo?.phoneNumber?.slice(-4)}</p>
             <div className="input-group">
               <ShieldCheck size={20} />
               <input type="text" placeholder="Verification Code" value={otp} onChange={(e) => setOtp(e.target.value)} required />
             </div>
             <div id="recaptcha-container"></div>
-            <motion.button 
-              whileTap={{ scale: 0.95 }}
-              type="submit" 
-              className="primary-btn" 
-              disabled={loading}
-            >
-              {loading ? <RefreshCw className="animate-spin" /> : 'Confirm Identity'}
-              <Lock size={20} />
+            <motion.button {...commonBtnProps}>
+              {loading ? <RefreshCw className="loading-spinner" /> : <span className="flex items-center gap-2">Confirm Identity <Lock size={20} /></span>}
             </motion.button>
           </form>
         );
-      default: // login
+      default:
         return (
           <form onSubmit={handleEmailAuth} className="auth-form">
-            <div className={`input-group ${error ? 'error-border' : ''}`}>
+            <div className="input-group">
               <Mail size={20} />
               <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-            <div className={`input-group ${error ? 'error-border' : ''}`}>
+            <div className="input-group">
               <Lock size={20} />
               <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-            <div className="flex justify-end mb-2">
-              <button type="button" onClick={() => setMode('forgot')} className="text-xs text-slate-500 hover:text-cyan-neon transition-colors">Forgot Password?</button>
+            <div className="flex justify-end">
+              <button type="button" onClick={() => setMode('forgot')} className="text-xs text-slate-500 hover:text-[#00ffff] transition-colors mb-2">Forgot Password?</button>
             </div>
-            <motion.button 
-              whileTap={{ scale: 0.95 }}
-              type="submit" 
-              className="primary-btn" 
-              disabled={loading}
-            >
-              {loading ? <RefreshCw className="animate-spin" /> : 'Sign In'}
-              <LogIn size={20} />
+            <motion.button {...commonBtnProps}>
+              <AnimatePresence mode="wait">
+                {loading ? (
+                  <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <RefreshCw className="loading-spinner" />
+                  </motion.div>
+                ) : (
+                  <motion.div key="text" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+                    Sign In <LogIn size={20} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.button>
           </form>
         );
@@ -333,16 +319,15 @@ const Login = () => {
 
   return (
     <div className="login-container relative">
-      {/* High-tech grid background overlay */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
       
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 20 }} 
-        animate={{ opacity: 1, scale: 1, y: 0 }} 
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="login-card glass-panel relative z-10 overflow-hidden"
+        initial={{ opacity: 0, scale: 0.9 }} 
+        animate={{ opacity: 1, scale: 1 }} 
+        transition={{ duration: 0.5 }}
+        className="login-card"
       >
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-neon to-transparent opacity-50"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00ffff] to-transparent opacity-50"></div>
         
         {mode !== 'login' && mode !== 'signup' && (
           <button onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); setVerificationId(null); }} className="absolute top-6 left-6 text-slate-500 hover:text-white transition-colors">
@@ -354,15 +339,15 @@ const Login = () => {
           <motion.div animate={{ rotateY: [0, 180, 360] }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }}>
             <MessageSquare size={48} className="brand-icon mx-auto" />
           </motion.div>
-          <h1 className="tracking-tighter">SmartChat</h1>
-          <p className="uppercase tracking-widest text-[10px] text-cyan-neon font-bold">Secure Neural Link</p>
+          <h1>SmartChat</h1>
+          <p>Secure Neural Link</p>
         </div>
 
         <AuthError message={error} clearError={() => setError('')} />
         {successMsg && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-green-400 text-sm mb-4 font-medium">{successMsg}</motion.p>}
 
         <AnimatePresence mode="wait">
-          <motion.div key={mode} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+          <motion.div key={mode} initial={{ opacity: 0, alpha: 0 }} animate={{ opacity: 1, alpha: 1 }} exit={{ opacity: 0, alpha: 0 }} transition={{ duration: 0.2 }}>
             {renderForm()}
           </motion.div>
         </AnimatePresence>
@@ -370,23 +355,13 @@ const Login = () => {
         {mode === 'login' && (
           <>
             <div className="divider"><span>OR</span></div>
-            <div className="flex gap-4 mb-8">
-              <motion.button 
-                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-                whileTap={{ scale: 0.98 }}
-                className="social-btn" 
-                onClick={handleGoogleSignIn}
-              >
+            <div className="flex gap-4 mb-4">
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="social-btn" onClick={handleGoogleSignIn}>
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
                 <span>Google</span>
               </motion.button>
-              <motion.button 
-                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-                whileTap={{ scale: 0.98 }}
-                className="social-btn" 
-                onClick={() => setMode('phone')}
-              >
-                <Smartphone size={18} className="text-cyan-neon" />
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="social-btn" onClick={() => setMode('phone')}>
+                <Smartphone size={18} className="text-[#00ffff]" />
                 <span>Phone</span>
               </motion.button>
             </div>
@@ -400,7 +375,6 @@ const Login = () => {
           </button>
         </p>
       </motion.div>
-
     </div>
   );
 };

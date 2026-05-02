@@ -227,10 +227,15 @@ const Login = () => {
               <Lock size={20} />
               <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-            <button type="submit" className="primary-btn" disabled={loading}>
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              type="submit" 
+              className="primary-btn" 
+              disabled={loading}
+            >
               {loading ? <RefreshCw className="animate-spin" /> : 'Create Account'}
               <UserPlus size={20} />
-            </button>
+            </motion.button>
           </form>
         );
       case 'forgot':
@@ -241,10 +246,15 @@ const Login = () => {
               <Mail size={20} />
               <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-            <button type="submit" className="primary-btn" disabled={loading}>
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              type="submit" 
+              className="primary-btn" 
+              disabled={loading}
+            >
               {loading ? <RefreshCw className="animate-spin" /> : 'Send Reset Link'}
               <Key size={20} />
-            </button>
+            </motion.button>
           </form>
         );
       case 'phone':
@@ -261,10 +271,15 @@ const Login = () => {
               />
             </div>
             <div id="recaptcha-container"></div>
-            <button type="submit" className="primary-btn" disabled={loading}>
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              type="submit" 
+              className="primary-btn" 
+              disabled={loading}
+            >
               {loading ? <RefreshCw className="animate-spin" /> : (verificationId ? 'Verify OTP' : 'Send OTP')}
               <Smartphone size={20} />
-            </button>
+            </motion.button>
           </form>
         );
       case 'mfa':
@@ -277,10 +292,15 @@ const Login = () => {
               <input type="text" placeholder="Verification Code" value={otp} onChange={(e) => setOtp(e.target.value)} required />
             </div>
             <div id="recaptcha-container"></div>
-            <button type="submit" className="primary-btn" disabled={loading}>
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              type="submit" 
+              className="primary-btn" 
+              disabled={loading}
+            >
               {loading ? <RefreshCw className="animate-spin" /> : 'Confirm Identity'}
               <Lock size={20} />
-            </button>
+            </motion.button>
           </form>
         );
       default: // login
@@ -297,10 +317,15 @@ const Login = () => {
             <div className="flex justify-end mb-2">
               <button type="button" onClick={() => setMode('forgot')} className="text-xs text-slate-500 hover:text-cyan-neon transition-colors">Forgot Password?</button>
             </div>
-            <button type="submit" className="primary-btn" disabled={loading}>
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              type="submit" 
+              className="primary-btn" 
+              disabled={loading}
+            >
               {loading ? <RefreshCw className="animate-spin" /> : 'Sign In'}
               <LogIn size={20} />
-            </button>
+            </motion.button>
           </form>
         );
     }
@@ -311,7 +336,12 @@ const Login = () => {
       {/* High-tech grid background overlay */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
       
-      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="login-card glass-panel relative z-10 overflow-hidden">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+        animate={{ opacity: 1, scale: 1, y: 0 }} 
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="login-card glass-panel relative z-10 overflow-hidden"
+      >
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-neon to-transparent opacity-50"></div>
         
         {mode !== 'login' && mode !== 'signup' && (
@@ -332,7 +362,7 @@ const Login = () => {
         {successMsg && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-green-400 text-sm mb-4 font-medium">{successMsg}</motion.p>}
 
         <AnimatePresence mode="wait">
-          <motion.div key={mode} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+          <motion.div key={mode} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
             {renderForm()}
           </motion.div>
         </AnimatePresence>
@@ -341,14 +371,24 @@ const Login = () => {
           <>
             <div className="divider"><span>OR</span></div>
             <div className="flex gap-4 mb-8">
-              <button className="flex-1 h-12 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2 group" onClick={handleGoogleSignIn}>
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
-                <span className="text-xs font-bold uppercase tracking-wider group-hover:text-white">Google</span>
-              </button>
-              <button className="flex-1 h-12 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2 group" onClick={() => setMode('phone')}>
+              <motion.button 
+                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+                whileTap={{ scale: 0.98 }}
+                className="social-btn" 
+                onClick={handleGoogleSignIn}
+              >
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+                <span>Google</span>
+              </motion.button>
+              <motion.button 
+                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+                whileTap={{ scale: 0.98 }}
+                className="social-btn" 
+                onClick={() => setMode('phone')}
+              >
                 <Smartphone size={18} className="text-cyan-neon" />
-                <span className="text-xs font-bold uppercase tracking-wider group-hover:text-white">Phone</span>
-              </button>
+                <span>Phone</span>
+              </motion.button>
             </div>
           </>
         )}
@@ -360,6 +400,7 @@ const Login = () => {
           </button>
         </p>
       </motion.div>
+
     </div>
   );
 };

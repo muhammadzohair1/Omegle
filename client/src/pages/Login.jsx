@@ -19,10 +19,47 @@ import {
   MessageSquare, Mail, Lock, User, LogIn, UserPlus, 
   Phone, Smartphone, ShieldCheck, Key, RefreshCw, ChevronLeft 
 } from 'lucide-react';
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import AuthError from '../components/AuthError';
 import { mapAuthCodeToMessage } from '../utils/authUtils';
 import './Login.css';
+
+// Move Sub-components OUTSIDE to prevent focus loss on re-render
+const MagneticButton = ({ children, className, onClick, disabled, type = "button", whileTap = { scale: 0.96 } }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const mouseX = useSpring(x, { stiffness: 150, damping: 15 });
+  const mouseY = useSpring(y, { stiffness: 150, damping: 15 });
+
+  function handleMouseMove(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    x.set((e.clientX - centerX) * 0.2);
+    y.set((e.clientY - centerY) * 0.4);
+  }
+
+  function handleMouseLeave() {
+    x.set(0);
+    y.set(0);
+  }
+
+  return (
+    <motion.button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className={className}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ x: mouseX, y: mouseY }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={whileTap}
+    >
+      {children}
+    </motion.button>
+  );
+};
 
 const Login = () => {
   const { currentUser } = useAuth();
@@ -47,25 +84,17 @@ const Login = () => {
 
   const springConfig = { type: "spring", stiffness: 300, damping: 30 };
 
-  // Variants for staggered entrance
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
+      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
     }
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: springConfig
-    }
+    visible: { opacity: 1, y: 0, transition: springConfig }
   };
 
   const handleAuthError = (err) => {
@@ -156,9 +185,7 @@ const Login = () => {
 
   const initRecaptcha = () => {
     if (!recaptchaVerifier.current) {
-      recaptchaVerifier.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible'
-      });
+      recaptchaVerifier.current = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
     }
   };
 
@@ -222,78 +249,22 @@ const Login = () => {
     }
   };
 
-  // Magnetic Button Effect
-  const MagneticButton = ({ children, className, onClick, disabled, type = "button", whileTap = { scale: 0.96 } }) => {
-    const x = useMotionValue(0);
-    const y = useMotionValue(0);
-    const mouseX = useSpring(x, { stiffness: 150, damping: 15 });
-    const mouseY = useSpring(y, { stiffness: 150, damping: 15 });
-
-    function handleMouseMove(e) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      x.set((e.clientX - centerX) * 0.2);
-      y.set((e.clientY - centerY) * 0.4);
-    }
-
-    function handleMouseLeave() {
-      x.set(0);
-      y.set(0);
-    }
-
-    return (
-      <motion.button
-        type={type}
-        disabled={disabled}
-        onClick={onClick}
-        className={className}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{ x: mouseX, y: mouseY }}
-        whileHover={{ scale: 1.02 }}
-        whileTap={whileTap}
-      >
-        {children}
-      </motion.button>
-    );
-  };
-
-  const InteractiveInput = ({ icon: Icon, ...props }) => {
-    const [isFocused, setIsFocused] = useState(false);
-    return (
-      <motion.div 
-        animate={{ 
-          scale: isFocused ? 1.02 : 1,
-          borderColor: isFocused ? "rgba(0, 255, 255, 0.5)" : "rgba(255, 255, 255, 0.1)",
-          boxShadow: isFocused ? "0 0 15px rgba(0, 255, 255, 0.2)" : "none"
-        }}
-        transition={springConfig}
-        className="input-group"
-      >
-        <Icon size={20} />
-        <input 
-          {...props} 
-          onFocus={() => setIsFocused(true)} 
-          onBlur={() => setIsFocused(false)} 
-        />
-      </motion.div>
-    );
-  };
-
   const renderForm = () => {
     switch (mode) {
       case 'signup':
         return (
           <form onSubmit={handleEmailAuth} className="auth-form">
-            <motion.div variants={itemVariants} className="input-wrapper">
-              <InteractiveInput icon={User} type="text" placeholder="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
+            <motion.div variants={itemVariants} className="input-group">
+              <User size={20} />
+              <input type="text" placeholder="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
             </motion.div>
-            <motion.div variants={itemVariants} className="input-wrapper">
-              <InteractiveInput icon={Mail} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <motion.div variants={itemVariants} className="input-group">
+              <Mail size={20} />
+              <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </motion.div>
-            <motion.div variants={itemVariants} className="input-wrapper">
-              <InteractiveInput icon={Lock} type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <motion.div variants={itemVariants} className="input-group">
+              <Lock size={20} />
+              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </motion.div>
             <motion.div variants={itemVariants}>
               <MagneticButton type="submit" className="primary-btn" disabled={loading}>
@@ -316,8 +287,9 @@ const Login = () => {
         return (
           <form onSubmit={handleForgotPassword} className="auth-form">
             <motion.p variants={itemVariants} className="text-slate-400 text-sm mb-4">Enter your email for a reset link.</motion.p>
-            <motion.div variants={itemVariants}>
-              <InteractiveInput icon={Mail} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <motion.div variants={itemVariants} className="input-group">
+              <Mail size={20} />
+              <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </motion.div>
             <motion.div variants={itemVariants}>
               <MagneticButton type="submit" className="primary-btn" disabled={loading}>
@@ -329,8 +301,15 @@ const Login = () => {
       case 'phone':
         return (
           <form onSubmit={verificationId ? verifyOtp : handlePhoneSignIn} className="auth-form">
-            <motion.div variants={itemVariants}>
-              <InteractiveInput icon={verificationId ? Key : Phone} type={verificationId ? "text" : "tel"} placeholder={verificationId ? "Enter OTP" : "+1234567890"} value={verificationId ? otp : phoneNumber} onChange={(e) => verificationId ? setOtp(e.target.value) : setPhoneNumber(e.target.value)} required />
+            <motion.div variants={itemVariants} className="input-group">
+              {verificationId ? <Key size={20} /> : <Phone size={20} />}
+              <input 
+                type={verificationId ? "text" : "tel"} 
+                placeholder={verificationId ? "Enter OTP" : "+1234567890"} 
+                value={verificationId ? otp : phoneNumber} 
+                onChange={(e) => verificationId ? setOtp(e.target.value) : setPhoneNumber(e.target.value)} 
+                required 
+              />
             </motion.div>
             <div id="recaptcha-container"></div>
             <motion.div variants={itemVariants}>
@@ -340,14 +319,33 @@ const Login = () => {
             </motion.div>
           </form>
         );
-      default:
+      case 'mfa':
+        return (
+          <form onSubmit={verifyMfa} className="auth-form">
+            <p className="text-cyan-neon text-sm font-bold mb-4">Two-Step Verification Required</p>
+            <p className="text-slate-400 text-xs mb-4">Code sent to device ending in {mfaInfo?.phoneNumber?.slice(-4)}</p>
+            <motion.div variants={itemVariants} className="input-group">
+              <ShieldCheck size={20} />
+              <input type="text" placeholder="Verification Code" value={otp} onChange={(e) => setOtp(e.target.value)} required />
+            </motion.div>
+            <div id="recaptcha-container"></div>
+            <motion.div variants={itemVariants}>
+              <MagneticButton type="submit" className="primary-btn" disabled={loading}>
+                {loading ? <RefreshCw className="loading-spinner" /> : <span className="flex items-center gap-2">Confirm Identity <Lock size={20} /></span>}
+              </MagneticButton>
+            </motion.div>
+          </form>
+        );
+      default: // login
         return (
           <form onSubmit={handleEmailAuth} className="auth-form">
-            <motion.div variants={itemVariants}>
-              <InteractiveInput icon={Mail} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <motion.div variants={itemVariants} className="input-group">
+              <Mail size={20} />
+              <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </motion.div>
-            <motion.div variants={itemVariants}>
-              <InteractiveInput icon={Lock} type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <motion.div variants={itemVariants} className="input-group">
+              <Lock size={20} />
+              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </motion.div>
             <motion.div variants={itemVariants} className="flex justify-end">
               <button type="button" onClick={() => setMode('forgot')} className="text-xs text-slate-500 hover:text-[#00ffff] transition-colors mb-2">Forgot Password?</button>
@@ -392,10 +390,7 @@ const Login = () => {
         )}
 
         <motion.div variants={itemVariants} className="brand">
-          <motion.div 
-            animate={{ rotateY: [0, 180, 360] }} 
-            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-          >
+          <motion.div animate={{ rotateY: [0, 180, 360] }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }}>
             <MessageSquare size={54} className="brand-icon mx-auto" />
           </motion.div>
           <h1>SmartChat</h1>

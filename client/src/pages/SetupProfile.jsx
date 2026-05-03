@@ -4,7 +4,7 @@ import { db, storage, auth } from '../firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { User, Camera, Check, RefreshCw, UploadCloud, ChevronRight } from 'lucide-react';
+import { User, Camera, Check, RefreshCw, UploadCloud, ChevronRight, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './SetupProfile.css';
 
@@ -79,7 +79,7 @@ const SetupProfile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!username.trim()) {
-      setError('Username is required');
+      setError('Neural ID (Username) is required');
       return;
     }
 
@@ -96,6 +96,7 @@ const SetupProfile = () => {
         photoURL = await getDownloadURL(storageRef);
       }
 
+      // Save to Firestore
       await setDoc(doc(db, 'users', currentUser.uid), {
         uid: currentUser.uid,
         username: username.trim(),
@@ -107,16 +108,31 @@ const SetupProfile = () => {
         profileSetupComplete: true
       });
 
+      // Crucial: Wait for profile refresh before success state
       await refreshProfile();
+      
       setSuccess(true);
+      
+      // Delay navigation to allow user to see success state
       setTimeout(() => {
-        navigate('/interests');
-      }, 2000);
+        console.log("Navigating to chat...");
+        navigate('/chat');
+      }, 1500);
+
     } catch (err) {
       console.error('Error setting up profile:', err);
-      setError('Failed to save profile. Please try again.');
+      setError('Neural Link Failed: Could not save profile.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const errorVariants = {
+    hidden: { opacity: 0, x: 0 },
+    visible: { 
+      opacity: 1, 
+      x: [0, -5, 5, -5, 5, 0],
+      transition: { duration: 0.4 }
     }
   };
 
@@ -168,7 +184,7 @@ const SetupProfile = () => {
             <p className="text-xs text-slate-500 mt-2">Tap to upload profile picture</p>
           </div>
 
-          <div className="setup-input-group">
+          <div className={`setup-input-group ${error && !username.trim() ? 'invalid' : ''}`}>
             <label htmlFor="username">Network Name</label>
             <div className="input-wrapper">
               <User size={18} className="input-icon" />
@@ -177,8 +193,12 @@ const SetupProfile = () => {
                 type="text" 
                 placeholder="Enter username..." 
                 value={username} 
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  if (error) setError('');
+                }}
                 maxLength={20}
+                className="neural-input"
               />
             </div>
           </div>
@@ -186,11 +206,14 @@ const SetupProfile = () => {
           <AnimatePresence>
             {error && (
               <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
+                key="error-message"
+                variants={errorVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
                 className="setup-error"
               >
+                <AlertCircle size={16} />
                 {error}
               </motion.div>
             )}
@@ -204,7 +227,13 @@ const SetupProfile = () => {
             {loading ? (
               <RefreshCw className="animate-spin" size={20} />
             ) : success ? (
-              <span className="flex items-center gap-2">Success <Check size={20} /></span>
+              <motion.span 
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="flex items-center gap-2"
+              >
+                Access Granted <Check size={20} />
+              </motion.span>
             ) : (
               <span className="flex items-center gap-2">Initialize Profile <ChevronRight size={20} /></span>
             )}

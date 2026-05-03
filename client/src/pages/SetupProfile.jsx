@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { db, storage, auth } from '../firebase';
+import { db, storage } from '../firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useNavigate, Navigate } from 'react-router-dom';
@@ -19,7 +19,6 @@ const SetupProfile = () => {
   const [success, setSuccess] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Redirect if not logged in
   if (!currentUser) return <Navigate to="/login" />;
 
   const handleImageChange = (e) => {
@@ -31,9 +30,7 @@ const SetupProfile = () => {
       }
       setImage(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result);
-      };
+      reader.onloadend = () => setPreview(reader.result);
       reader.readAsDataURL(file);
       setError('');
     }
@@ -50,26 +47,16 @@ const SetupProfile = () => {
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-
-          // Resize to max 500px width
           const MAX_WIDTH = 500;
           if (width > MAX_WIDTH) {
             height = (MAX_WIDTH / width) * height;
             width = MAX_WIDTH;
           }
-
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
-
-          canvas.toBlob((blob) => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error('Canvas to Blob conversion failed'));
-            }
-          }, 'image/jpeg', 0.7); // Quality 0.7
+          canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Canvas to Blob conversion failed')), 'image/jpeg', 0.7);
         };
       };
       reader.onerror = (err) => reject(err);
@@ -88,7 +75,6 @@ const SetupProfile = () => {
 
     try {
       let photoURL = currentUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.uid}`;
-
       if (image) {
         const compressedBlob = await compressImage(image);
         const storageRef = ref(storage, `profiles/${currentUser.uid}`);
@@ -96,8 +82,7 @@ const SetupProfile = () => {
         photoURL = await getDownloadURL(storageRef);
       }
 
-      // Save to Firestore
-      await setDoc(doc(db, 'users', currentUser.uid), {
+      const profileData = {
         uid: currentUser.uid,
         username: username.trim(),
         displayName: username.trim(),
@@ -106,19 +91,17 @@ const SetupProfile = () => {
         createdAt: serverTimestamp(),
         interests: { category: 'Casual', subOptions: [] },
         profileSetupComplete: true
-      });
+      };
 
-      // Crucial: Wait for profile refresh before success state
-      await refreshProfile();
+      await setDoc(doc(db, 'users', currentUser.uid), profileData);
+      console.log("Profile Saved!");
       
+      await refreshProfile();
       setSuccess(true);
       
-      // Delay navigation to allow user to see success state
       setTimeout(() => {
-        console.log("Navigating to chat...");
-        navigate('/chat');
-      }, 1500);
-
+        window.location.href = '/chat';
+      }, 1000);
     } catch (err) {
       console.error('Error setting up profile:', err);
       setError('Neural Link Failed: Could not save profile.');
@@ -127,123 +110,52 @@ const SetupProfile = () => {
     }
   };
 
-  const errorVariants = {
-    hidden: { opacity: 0, x: 0 },
-    visible: { 
-      opacity: 1, 
-      x: [0, -5, 5, -5, 5, 0],
-      transition: { duration: 0.4 }
-    }
-  };
-
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="setup-container"
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="setup-container">
       <div className="setup-glass-card">
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="setup-header"
-        >
-          <div className="setup-icon-wrapper">
-            <User size={32} className="setup-icon" />
-          </div>
+        <div className="setup-header">
+          <div className="setup-icon-wrapper"><User size={32} /></div>
           <h1>Initialize Identity</h1>
           <p>Configure your neural profile for the network.</p>
-        </motion.div>
+        </div>
 
         <form onSubmit={handleSubmit} className="setup-form">
-          <div className="avatar-upload-section">
-            <div 
-              className="avatar-preview-container"
-              onClick={() => fileInputRef.current.click()}
-            >
-              {preview ? (
-                <img src={preview} alt="Preview" className="avatar-preview" />
-              ) : (
-                <div className="avatar-placeholder">
-                  <Camera size={40} className="text-slate-500" />
-                </div>
-              )}
-              <div className="avatar-overlay">
-                <UploadCloud size={20} />
-              </div>
+          <div className="avatar-section">
+            <div className="avatar-picker" onClick={() => fileInputRef.current.click()}>
+              {preview ? <img src={preview} alt="Preview" /> : <Camera size={40} />}
+              <div className="overlay"><UploadCloud size={20} /></div>
             </div>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleImageChange} 
-              accept="image/*" 
-              className="hidden" 
-            />
-            <p className="text-xs text-slate-500 mt-2">Tap to upload profile picture</p>
+            <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
+            <p>Upload Neural Signature</p>
           </div>
 
-          <div className={`setup-input-group ${error && !username.trim() ? 'invalid' : ''}`}>
-            <label htmlFor="username">Network Name</label>
-            <div className="input-wrapper">
-              <User size={18} className="input-icon" />
+          <div className={`input-container ${error ? 'invalid' : ''}`}>
+            <label>Network Name</label>
+            <div className="input-box">
+              <User size={18} className="icon" />
               <input 
-                id="username"
                 type="text" 
-                placeholder="Enter username..." 
+                placeholder="Enter unique ID..." 
                 value={username} 
-                onChange={(e) => {
-                  setUsername(e.target.value);
-                  if (error) setError('');
-                }}
+                onChange={(e) => { setUsername(e.target.value); if (error) setError(''); }}
                 maxLength={20}
-                className="neural-input"
               />
             </div>
           </div>
 
           <AnimatePresence>
             {error && (
-              <motion.div 
-                key="error-message"
-                variants={errorVariants}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                className="setup-error"
-              >
-                <AlertCircle size={16} />
-                {error}
+              <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: [0, -5, 5, 0] }} exit={{ opacity: 0 }} className="error-bubble">
+                <AlertCircle size={16} /> {error}
               </motion.div>
             )}
           </AnimatePresence>
 
-          <button 
-            type="submit" 
-            className={`setup-submit-btn ${success ? 'success' : ''}`}
-            disabled={loading || success}
-          >
-            {loading ? (
-              <RefreshCw className="animate-spin" size={20} />
-            ) : success ? (
-              <motion.span 
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="flex items-center gap-2"
-              >
-                Access Granted <Check size={20} />
-              </motion.span>
-            ) : (
-              <span className="flex items-center gap-2">Initialize Profile <ChevronRight size={20} /></span>
-            )}
+          <button type="submit" className={`submit-btn ${success ? 'success' : ''}`} disabled={loading || success}>
+            {loading ? <RefreshCw className="animate-spin" size={20} /> : success ? <Check size={20} /> : "Initialize Profile"}
           </button>
         </form>
       </div>
-
-      {/* Decorative background elements */}
-      <div className="setup-bg-glow top-right"></div>
-      <div className="setup-bg-glow bottom-left"></div>
     </motion.div>
   );
 };

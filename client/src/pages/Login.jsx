@@ -88,10 +88,24 @@ const Login = () => {
   const springConfig = { type: "spring", stiffness: 300, damping: 30 };
 
   const containerVariants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 0, y: 20, scale: 0.98 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+      y: 0,
+      scale: 1,
+      transition: { 
+        staggerChildren: 0.1, 
+        delayChildren: 0.2,
+        type: "spring",
+        stiffness: 260,
+        damping: 20
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      y: -20, 
+      scale: 0.98,
+      transition: { duration: 0.3, ease: "easeInOut" } 
     }
   };
 
@@ -142,7 +156,8 @@ const Login = () => {
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
         await createUserProfile(result.user);
-        navigate('/interests');
+        // We will update redirect logic later to /setup-profile
+        navigate('/setup-profile');
       }
     } catch (err) {
       handleAuthError(err);
@@ -163,7 +178,8 @@ const Login = () => {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      navigate('/interests');
+      // We will update redirect logic later to /setup-profile
+      navigate('/setup-profile');
     } catch (err) {
       handleAuthError(err);
     } finally {
@@ -178,7 +194,10 @@ const Login = () => {
     try {
       await sendPasswordResetEmail(auth, email);
       setSuccessMsg('Reset link sent! Check your inbox.');
-      setTimeout(() => setMode('login'), 3000);
+      setTimeout(() => {
+        setSuccessMsg('');
+        setMode('login');
+      }, 3000);
     } catch (err) {
       handleAuthError(err);
     } finally {
@@ -216,7 +235,7 @@ const Login = () => {
     try {
       const result = await verificationId.confirm(otp);
       await createUserProfile(result.user);
-      navigate('/interests');
+      navigate('/setup-profile');
     } catch (err) {
       handleAuthError(err);
     } finally {
@@ -244,7 +263,7 @@ const Login = () => {
       const cred = PhoneAuthProvider.credential(verificationId, otp);
       const multiFactorAssertion = PhoneMultiFactorGenerator.assertion(cred);
       await mfaResolver.resolveSignIn(multiFactorAssertion);
-      navigate('/interests');
+      navigate('/setup-profile');
     } catch (err) {
       handleAuthError(err);
     } finally {
@@ -253,14 +272,17 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container relative">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={containerVariants}
+      className="login-container relative"
+    >
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none"></div>
       
       <motion.div 
         layout
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
         className="login-card"
       >
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00ffff] to-transparent opacity-20"></div>
@@ -447,7 +469,7 @@ const Login = () => {
           </button>
         </motion.p>
       </motion.div>
-    </div>
+    </motion.div>
   );
 };
 

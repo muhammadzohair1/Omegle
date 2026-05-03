@@ -683,8 +683,32 @@ const Chat = () => {
     clearTimeout(typingTimeoutRef.current);
   };
 
+  const pageVariants = {
+    initial: { opacity: 0, x: 20 },
+    animate: { 
+      opacity: 1, 
+      x: 0,
+      transition: {
+        type: "spring",
+        stiffness: 260,
+        damping: 20
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      x: -20,
+      transition: { duration: 0.3, ease: "easeInOut" }
+    },
+  };
+
   return (
-    <div className="chat-container h-[100dvh] w-full bg-obsidian text-slate-100 select-none touch-none overflow-hidden font-inter p-1 sm:p-2 md:p-4">
+    <motion.div 
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageVariants}
+      className="chat-container h-[100dvh] w-full bg-obsidian text-slate-100 select-none touch-none overflow-hidden font-inter p-1 sm:p-2 md:p-4"
+    >
 
       {/* Background Ambience */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900/40 via-obsidian to-obsidian pointer-events-none"></div>
@@ -1093,7 +1117,7 @@ const Chat = () => {
             )}
           </AnimatePresence>
         </div>
-    </div>
+    </motion.div>
   );
 };
 

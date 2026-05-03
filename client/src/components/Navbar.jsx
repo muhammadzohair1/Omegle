@@ -4,6 +4,7 @@ import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, Settings, MessageSquare, User } from 'lucide-react';
+import ConnectionStatus from './ConnectionStatus';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -25,10 +26,15 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-glass">
         <div className="navbar-container">
-          <Link to="/chat" className="navbar-logo">
-            <MessageSquare className="logo-icon" />
-            <span className="hidden xs:inline">SmartChat</span>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/chat" className="navbar-logo">
+              <MessageSquare className="logo-icon" />
+              <span className="hidden xs:inline">SmartChat</span>
+            </Link>
+            <div className="hidden sm:block">
+              <ConnectionStatus />
+            </div>
+          </div>
           
           <div className="navbar-links">
             <Link to="/profile" className="user-profile-badge">
